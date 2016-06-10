@@ -12,6 +12,9 @@ typedef struct SuperBlock {
 	uint32_t first_data_block; 	// Number of the first block of the data section
 } T_SpBlk;				// Total size 24B
 
-int create_sBk(); //create a new super block
-int load_sBk(); //Load the super block
+int create_sBk(uint32_t bSize, uint32_t nb_inode);	/* create a new super block
+								 bSize is Block size in Byte
+								 nb_inode is the number of inode to create
+						 	*/
+int load_sBk(T_SpBlk* desc); //Load the super block in desc
 

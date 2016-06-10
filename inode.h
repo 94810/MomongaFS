@@ -3,6 +3,7 @@
 #define INDIRECT_BLOCK 12
 #define DOUBLE_INDIRECT_BLOCK 13
 #define TRIPLE_INDIRECT_BLOCK 14
+#define ROOT_DIRECTORY_INODE 0 //The inode of the root directory is the first Inode
 
 typedef struct Inode {
 	uint32_t file_size ;	 //	Size of the file in bytes

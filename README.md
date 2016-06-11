@@ -21,8 +21,8 @@ L'inode 0 désigne le répertoire racine.
 
 ###Référence
 extX :
-* [link](https://www.fbi.h-da.de/fileadmin/personal/h.baier/Lectures-winter-11/WS-11-Forensics/vorlesung_forensik_ws11-12_kap07-ext-handout.pdf)
-* [link](http://www.nongnu.org/ext2-doc/ext2.html#DISK-ORGANISATION)
+* [Cours sur l'extX](https://www.fbi.h-da.de/fileadmin/personal/h.baier/Lectures-winter-11/WS-11-Forensics/vorlesung_forensik_ws11-12_kap07-ext-handout.pdf)
+* [Description de l'ext2](http://www.nongnu.org/ext2-doc/ext2.html)
 
 
 ---

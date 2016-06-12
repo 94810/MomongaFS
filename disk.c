@@ -1,16 +1,16 @@
 #include "disk.h"
 
 int create_disk(int size, const char* filepath){
-	int fd_disk, i=0 ;
-	unsigned int voi=0 ;
+	int fd_disk, i=0, check=0 ;
+	uint8_t voi=0 ;
     
-	fd_disk=open(filepath,O_CREAT|O_EXCL,0640);
+	fd_disk=open(filepath,O_CREAT|O_EXCL|O_WRONLY,0640);
 
-    	if (fd_disk==EEXIST){//Le disque existe déja
+    	if (fd_disk==-1){//Le disque existe déja
         	return -1;
     	}else{
 		for (i=0;i<=size;i++){ //On rempli le fichier de 0
-    			write(fd_disk, &voi, 1) ;
+    			check=write(fd_disk, &voi, 1) ;
    		 }
 	}
 	
@@ -33,7 +33,7 @@ int open_disk(const char* filePath, T_vdisk* desc){
 		return -1 ; // Quit if opening fail
 	}
  
-	if(!fstat(fd, &disk )){ //We get the stats to get the vdisk size, if we can't get stats -> Quit	
+	if(fstat(fd, &disk )==-1){ //We get the stats to get the vdisk size, if we can't get stats -> Quit	
 		printf("Can't get vDisk stats of %s\n", filePath) ;
 		return -1 ; 
 	}

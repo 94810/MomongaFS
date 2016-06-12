@@ -15,7 +15,18 @@ Le Disque est organisé de la manière suivante :
 * La Block Bitmap
 * Les Data
 
-L'inode 0 désigne le répertoire racine.
+L'inode 0 désigne le dossier racine.
+
+###Structure d'un Dossier
+
+Un Dossier est un fichier spécial permetant d'organiser les fichiers. Il est structuer en "lignes" chaque ligne indique un fichier, une ligne est structrer ainsi :
+	
+	* 4 bytes (un uint32_t) représentant le numéro de l'inode du fichier
+	* Une série de caractéres ASCII (a l'exeption de '/', '>', '\n')  
+	* Un symbole de fin de ligne '\n'
+
+Le dossier racine est désigner par un '/' seul.
+Pour acceder à un fichier on donne la suite de dossier a suivre pour le trouver depuis le dossier racine. Exemple de chemin '/animal/oiseaux/pelican'
 
 ---
 
@@ -23,11 +34,6 @@ L'inode 0 désigne le répertoire racine.
 extX :
 * [Cours sur l'extX](https://www.fbi.h-da.de/fileadmin/personal/h.baier/Lectures-winter-11/WS-11-Forensics/vorlesung_forensik_ws11-12_kap07-ext-handout.pdf)
 * [Description de l'ext2](http://www.nongnu.org/ext2-doc/ext2.html)
-
-
----
-
-- 2016 
 
 
 

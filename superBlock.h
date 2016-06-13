@@ -1,8 +1,10 @@
+#ifndef SUPER_BLOCK
+#define SUPER_BLOCK
 #include "sys.h"
-#include "disk.h"
 #include "inode.h"
+#include "disk.h"
 
-#define SUPER_BLOCK_SIZE 24 //Super Block size in bytes
+#define SUPER_BLOCK_SIZE sizeof(T_SpBlk) //Super Block size in bytes
 
 
 typedef struct SuperBlock {
@@ -19,7 +21,9 @@ void sBk_creat(uint32_t bSize, uint32_t nb_inode) ;	/* create a new super block 
 			   				   nb_inode is the number of inode to create 
 						       */
 int sBk_load() ;  //Load the super block of dsk in dest Return 0 if sucess -1 else
+int sBk_write() ;
 int sBk_calc_iBitmap() ; //return the inode bitmap size in Byte
 int sBk_calc_bBitmap() ; //return the block bitmap size in Byte
 
 extern T_SpBlk G_super_block ;
+#endif

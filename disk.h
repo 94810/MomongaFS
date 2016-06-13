@@ -1,3 +1,5 @@
+#ifndef DISK
+#define DISK
 #include "sys.h"
 
 typedef struct Disk {
@@ -28,3 +30,4 @@ int disk_write(void* buffer, unsigned int bytes) ; // Attempt to write "bytes" b
 void  disk_close(); //close the disk
 
 extern T_vdisk G_vdisk ; //Use Global for the disk
+#endif

@@ -1,30 +1,22 @@
+#include "superBlock.h"
 #include "disk.h"
 
 void main(){
-
-	T_vdisk dsk;	
-	char t=0xFF;
 	
-	if(disk_creat(50, "vdisk")==-1)
+	if(disk_creat(500, "vdisk")==-1)
 		printf("Disk exist !\n");
 
 	disk_open("vdisk");
+
+	sBk_creat(10, 5);
 	
-	disk_seek(80); //Should fail
+	printf("test : %d, %d, %d, %d, %d, %d\n", G_super_block.i_count, G_super_block.b_count, G_super_block.f_block, G_super_block.f_inode, G_super_block.b_size, G_super_block.first_data_block);
 
-	disk_seek(2); //Should sucess
+	sBk_write();
 
-	disk_write(&t, 1);
-
-	disk_seek(49);
-
-	disk_write(&t, 1);
+	sBk_load();
 	
-	disk_seek(5);
-
-	disk_read(&t, 1);
-
-	printf("Test : %d\n", t);
-
+	printf("test : %d, %d, %d, %d, %d, %d\n", G_super_block.i_count, G_super_block.b_count, G_super_block.f_block, G_super_block.f_inode, G_super_block.b_size, G_super_block.first_data_block);
+	
 	disk_close();
 }

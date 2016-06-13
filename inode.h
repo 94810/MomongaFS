@@ -1,3 +1,5 @@
+#ifndef INODE
+#define INODE
 #include "sys.h"
 #include "disk.h"
 
@@ -5,6 +7,7 @@
 #define DOUBLE_INDIRECT_BLOCK 13
 #define TRIPLE_INDIRECT_BLOCK 14
 #define ROOT_DIRECTORY_INODE 0 //The inode of the root directory is the first Inode
+#define INODE_SIZE sizeof(T_inode)
 
 typedef struct Inode {
 	uint32_t file_size ;	 //	Size of the file in bytes
@@ -25,4 +28,7 @@ typedef struct Inode {
 	uint8_t	 link_count ;	 //	Number of link on this file 
 } T_inode;			 //	Total size 70B
 
-int load_inode(T_inode* desc, uint32_t nb) ; // Load the nb inode in desc 
+int inode_load(T_inode* dest, uint32_t nb) ; // Load the nb inode in desc 
+
+int inode_write(T_inode* src, uint32_t nb) ; // write the inode src to inode nb 
+#endif

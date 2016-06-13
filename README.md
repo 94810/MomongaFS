@@ -21,9 +21,9 @@ L'inode 0 désigne le dossier racine.
 
 Un Dossier est un fichier spécial permetant d'organiser les fichiers. Il est structuer en "lignes" chaque ligne indique un fichier, une ligne est structrer ainsi :
 	
-	* 4 bytes (un uint32_t) représentant le numéro de l'inode du fichier
-	* Une série de caractéres ASCII (a l'exeption de '/', '>', '\n')  
-	* Un symbole de fin de ligne '\n'
+* 4 bytes (un uint32_t) représentant le numéro de l'inode du fichier
+* Une série de caractéres ASCII (a l'exeption de '/', '>', '\n')  
+* Un symbole de fin de ligne '\n'
 
 Le dossier racine est désigner par un '/' seul.
 Pour acceder à un fichier on donne la suite de dossier a suivre pour le trouver depuis le dossier racine. Exemple de chemin '/animal/oiseaux/pelican'

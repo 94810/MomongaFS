@@ -5,20 +5,26 @@ void main(){
 	T_vdisk dsk;	
 	char t=0xFF;
 	
-	if(create_disk(50, "vdisk")==-1)
+	if(disk_creat(50, "vdisk")==-1)
 		printf("Disk exist !\n");
 
-	open_disk("vdisk", &dsk);
+	disk_open("vdisk");
 	
-	disk_seek(dsk, 80); //Should fail
+	disk_seek(80); //Should fail
 
-	disk_seek(dsk, 2); //Should sucess
+	disk_seek(2); //Should sucess
 
-	write(dsk.fd, &t, 1);
+	disk_write(&t, 1);
 
-	disk_seek(dsk, 49);
+	disk_seek(49);
 
-	write(dsk.fd, &t, 1);
+	disk_write(&t, 1);
+	
+	disk_seek(5);
 
-	close(dsk.fd);
+	disk_read(&t, 1);
+
+	printf("Test : %d\n", t);
+
+	disk_close();
 }

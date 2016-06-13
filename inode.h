@@ -1,4 +1,5 @@
 #include "sys.h"
+#include "disk.h"
 
 #define INDIRECT_BLOCK 12
 #define DOUBLE_INDIRECT_BLOCK 13

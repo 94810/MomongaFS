@@ -10,8 +10,8 @@ Le but est la création d'un système de fichier simple et fonctionel, pour pouv
 Le Disque est organisé de la manière suivante :
 
 * Le Superblock
-* L'Inode Bitmap
 * Les Inodes
+* L'Inode Btmap
 * La Block Bitmap
 * Les Data
 

@@ -30,5 +30,11 @@ typedef struct Inode {
 
 int inode_load(T_inode* dest, uint32_t nb) ; // Load the nb inode in desc 
 
-int inode_write(T_inode* src, uint32_t nb) ; // write the inode src to inode nb 
+int inode_write(T_inode* src, uint32_t nb) ; // write the inode src to inode nb
+
+int seek_to_Ibitmap() ; //Place disk cursor on first bytes of inode bimap
+
+unsigned int first_free_bitmap() ; //Return the number of the first free bit in bitmap
+
+int change_bit(int n) ; //Perform a not on the bit n of the under cursor byte
 #endif

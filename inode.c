@@ -91,7 +91,49 @@ unsigned int first_free_bitmap(){
 }
 
 int change_bit(int n){
+	uint8_t mask, buff, temp;	
+		
+	if(n>=8) //Only 8 bit on a Byte :p
+		return -1 ;
 	
-	
+	if(disk_read(&buff, 1)==-1)
+		return -1 ;
+
+	mask=0b10000000 ;
+
+	mask = mask >> n ;
+
+	buff = ( buff & ~mask ) | ( ~buff & mask ) ; /*
+							Using bitwise operand 
+
+						     */
+	lseek(G_vdisk.fd, -1, SEEK_CUR) ; //Set back to origin the cursor
+
+	if(disk_write(&buff, 1)==-1) // Writing the result
+		return -1 ;
+
+	return 0;
 		
 }
+
+
+int change_inode_status(unsigned int n){
+	
+	int k = n / 8 ;
+
+	disk_seek(SUPER_BLOCK_SIZE+(INODE_SIZE*G_super_block.i_count)+k);
+
+	return change_bit(n%8);
+}
+
+int change_block_status(unsigned int n){
+	
+	int k = n / 8 ;
+
+	disk_seek(SUPER_BLOCK_SIZE+(INODE_SIZE*G_super_block.i_count)+sBk_calc_iBitmap+k);
+
+	return change_bit(n%8);
+}
+
+
+

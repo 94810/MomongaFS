@@ -37,4 +37,8 @@ int seek_to_Ibitmap() ; //Place disk cursor on first bytes of inode bimap
 unsigned int first_free_bitmap() ; //Return the number of the first free bit in bitmap
 
 int change_bit(int n) ; //Perform a not on the bit n of the under cursor byte
+
+int change_inode_status(unsigned int n) ; //switch the status of inode n free<->used
+
+int change_block_status(unsigned int n) ; //switch the status of the block n free<->used
 #endif

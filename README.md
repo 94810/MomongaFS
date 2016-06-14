@@ -6,7 +6,7 @@ MomongaFS est un système de fichiers crée dans le cadre d'un projet de premiè
 Le but est la création d'un système de fichier simple et fonctionel, pour pouvoir le tester il sera acompagné d'un MiniShell.
 
 ###Structure du Disque
-
+Ici la taile du disque est limitée a ~4Go.
 Le Disque est organisé de la manière suivante :
 
 * Le Superblock

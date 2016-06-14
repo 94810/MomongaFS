@@ -1,10 +1,6 @@
 #include "shell.h"
-
-int main (void){
-return 0;
-
-}
-char** user_input (int max_length){
+//Ne cause pas de fuite mémoire-- Il faut juste bien penser a free tout les mots ainsi que le tableau!
+char** user_input (int* p_size){
 
     //Phase 1: récupérer l'input avec les espaces.
     char command[255]; //Les commandes sont limitées a 255 caractères...
@@ -15,7 +11,7 @@ char** user_input (int max_length){
     char c, ** ret=NULL, ** new_ret=NULL, *word=NULL, *new_word=NULL;
     do{                                                         //                              ---LA BOUCLE QUI TACHE---
         c=command[i];                                           // J'avais pas envie de me faire chier a faire baucoup de tours dans le tableau, donc,
-        while (c!=' ' || c!='\0')                               // Je fais des allocations succésives de tableaux, par ex, le tableau qui contient les mots
+        while (c!='\n' && c!='\0'&& c!=' ')                     // Je fais des allocations succésives de tableaux, par ex, le tableau qui contient les mots
         {                                                       // est adressé plus grand d'une case, a chaque nouveau mot. Pareil pour les mots,
             size++;                                             // a chaque nouveau cractère, on copie dans un tableau plus grand... (J'espère que je vais pas oublier de free :/)
             new_word=(char*)malloc((size + 1)*sizeof(char));
@@ -33,6 +29,7 @@ char** user_input (int max_length){
             word=new_word;
             new_word=NULL;
             i++;
+            c=command[i];
         }
         size=0;
         n_words++;
@@ -47,7 +44,6 @@ char** user_input (int max_length){
             for(j=0;j<(n_words-1);j++)
             {
                 new_ret[j]=ret[j];
-
             }
             new_ret[(n_words-1)]=word;
             free(ret);
@@ -55,6 +51,7 @@ char** user_input (int max_length){
         ret=new_ret;
         new_ret=NULL;
         i++;
-    }while(c!='\0');
+    }while(c!='\0' && c!='\n');
+    *p_size=n_words;
     return ret;
 }

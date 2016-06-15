@@ -32,7 +32,9 @@ int inode_load(T_inode* dest, uint32_t nb) ; // Load the nb inode in desc
 
 int inode_write(T_inode* src, uint32_t nb) ; // write the inode src to inode nb
 
-int seek_to_Ibitmap() ; //Place disk cursor on first bytes of inode bimap
+int seek_to_Ibitmap() ; //Place disk cursor on the first byte of inode bitmap
+
+int seek_to_Bbitmap() ; //Place disk cursor on the first byte of block bitmap
 
 unsigned int first_free_bitmap() ; //Return the number of the first free bit in bitmap
 
@@ -41,4 +43,5 @@ int change_bit(int n) ; //Perform a not on the bit n of the under cursor byte
 int change_inode_status(unsigned int n) ; //switch the status of inode n free<->used
 
 int change_block_status(unsigned int n) ; //switch the status of the block n free<->used
+
 #endif

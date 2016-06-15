@@ -16,12 +16,11 @@ typedef struct FD{
 	uint8_t mod ;
 } T_File;
 
-
 int mfs_open(const char* Path, uint8_t mod, T_File* file) ; // 0 open sucess -1 fail
 int mfs_block_seek(unsigned int block) ; //Goes to block number "block" 
 int mfs_file_seek(unsigned int byte) ; //Goes to byte number "byte" in file
-int mfs_creat(const char* filePath) ;
-int mfs_close(T_File* file) ; // Write T_File.inode on disk and cahneg mod to 0
+int mfs_creat(const char* Path) ;
+int mfs_close(T_File* file) ; // Write T_File.inode on disk and change mod to 0
 int mfs_read(T_File* file , void* buff, uint32_t byte) ;
 int mfs_write(T_File* file, void* buff, uint32_t byte) ;
 int mfs_mkdir(const char* Path) ; 

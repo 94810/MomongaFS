@@ -270,4 +270,70 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 	return nb_bitread ;
 }
 
+int mfs_write(T_File* file, void* buff, uint32_t byte){
+	unsigned int init_block_size, final_block_size, nb_byteWrite=0, to_write=0, i=0;
+
+	//Calc File size in block
+	init_block_size = file->inode.file_size / G_super_block.b_size;
+	if(file->inode.file_size % G_super_block.b_size != 0)
+		init_block_size++;	
+			
+	//Calc File size in block AFTER wirting
+	final_block_size = file->current_block + ((file->cursor_byte + byte) / G_super_block.block_size);
+	if((file->cursor_byte + byte) % G_super_block.block_size != 0)
+		final_block_size++;
+	
+	//If we need more space give it
+	if(init_block_size<final_block_size)
+		mfs_alloc_block(file, final_block_size-init_block_size);
+	
+	//On écrit 
+	
+	disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte) ;
+	
+	if(byte > (8-file->cursor_byte)){
+		to_write=8-file->cursor_byte ;
+		disk_write(f_buff, to_write);
+		nb_byteWrite=to_write;
+		file->cursor_block++;
+		file->cursor_byte=0;            //On se calle sur le prochain block
+
+		to_write = byte-nb_byteWrite / 8 ; //On regarde le nombre de block a écrire
+
+		for(i=0 ; i<to_write ; i++){
+			disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte);
+			
+			disk_write(f_buff+nb_byteWrite, G_super_block.b_size);
+
+			file->cursor_block ++ ;
+		
+			nb_byteWrite+= G_super_block.b_size ;
+		} //On écrit les blocks
+
+		if(byte-nb_byteWrite!=0){
+			disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte);
+			
+			file->cursor_byte = disk_write(f_buff+nb_byteWrite, byte-nb_byteWrite) ;
+	 		
+			nb_byteWrite += file->cursor_byte;
+		} //On écrit le reste forcément < 1 block
+		
+	}else{
+		nb_byteWrite += disk_write(buff, byte);
+		
+		file->cursor_byte+=byte ;
+
+		if(file->cursor_byte > 7){
+			file->cursor_block++;
+			file->cursor_byte=0;
+		}
+	}		
+
+	return nb_byteWrite ;
+	
+	return 0;
+}
+
+
+
 

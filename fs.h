@@ -26,4 +26,6 @@ int mfs_read(T_File* file , void* buff, uint32_t byte) ;
 int mfs_write(T_File* file, void* buff, uint32_t byte) ;
 int mfs_mkdir(const char* Path) ;
 int mfs_rm(const char* Path) ; //Change the inode block table to all zero and change ibitmap
+void mfs_alloc_block(T_File *file, uint32_t block); /* Allocate "block" block for file
+							Maj the inode and the T_File */
 #endif

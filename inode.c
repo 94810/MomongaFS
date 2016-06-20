@@ -13,7 +13,7 @@ int inode_load(T_inode* dest, uint32_t nb){
 	res = res + disk_read(&(dest->last_mod), 4);
 	res = res + disk_read(&(dest->link_count), 1);
 
-	if(res ! = INODE_SIZE)
+	if(res != INODE_SIZE)
 		res=-1;
 	else
 		res=0;
@@ -27,13 +27,13 @@ int inode_write(T_inode* src, uint32_t nb){
 	
 	disk_seek(SUPER_BLOCK_SIZE+(nb*INODE_SIZE));
 	
-	res = res + disk_write(&(dest->file_size), 4);
-	res = res + disk_write(&(dest->file_mode), 1);
-	res = res + disk_write(&(dest->d_block), 60);
-	res = res + disk_write(&(dest->last_mod), 4);
-	res = res + disk_write(&(dest->link_count), 1);
+	res = res + disk_write(&(src->file_size), 4);
+	res = res + disk_write(&(src->file_mode), 1);
+	res = res + disk_write(&(src->d_block), 60);
+	res = res + disk_write(&(src->last_mod), 4);
+	res = res + disk_write(&(src->link_count), 1);
 
-	if(res ! = INODE_SIZE)
+	if(res != INODE_SIZE)
 		res=-1;
 	else
 		res=0;
@@ -42,11 +42,11 @@ int inode_write(T_inode* src, uint32_t nb){
 }
 
 int seek_to_Ibitmap(){
-	return disk_seek(SUPER_BLOCK_SIZE+(INODE_SIZE*G_super_block.i_count));
+	return disk_seek( SUPER_BLOCK_SIZE + (INODE_SIZE*G_super_block.i_count)) ;
 }
 
 int seek_to_Bbitmap(){
-	return disk_seek(SUPER_BLOCK_SIZE+(INODE_SIZE*G_super_block.i_count)+sBk_calc_iBitmap);
+	return disk_seek( SUPER_BLOCK_SIZE + (INODE_SIZE*G_super_block.i_count) + sBk_calc_iBitmap()) ;
 }
 
 unsigned int first_free_bitmap(){
@@ -87,7 +87,7 @@ unsigned int first_free_bitmap(){
 			byte_count++;
 	}
 
-	return (byte_count*8)+i
+	return (byte_count*8)+i;
 }
 
 int change_bit(int n){
@@ -130,7 +130,7 @@ int change_block_status(unsigned int n){
 	
 	int k = n / 8 ;
 
-	disk_seek(SUPER_BLOCK_SIZE+(INODE_SIZE*G_super_block.i_count)+sBk_calc_iBitmap+k);
+	disk_seek(SUPER_BLOCK_SIZE+(INODE_SIZE*G_super_block.i_count)+sBk_calc_iBitmap()+k);
 
 	return change_bit(n%8);
 }

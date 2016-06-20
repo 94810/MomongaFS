@@ -7,6 +7,7 @@
 #include "disk.h"
 #define READ 0b10000000
 #define WRITE 0b01000000
+#define ADR_BLK_SIZE G_super_block.b_size/sizeof(uint32_t)
 
 typedef struct FD{
 	uint32_t inode_nb ;

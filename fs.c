@@ -306,14 +306,16 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 int mfs_write(T_File* file, void* buff, uint32_t byte){
 	unsigned int init_block_size, final_block_size, nb_byteWrite=0, to_write=0, i=0;
 
+	uint8_t *f_buff = buff;
+
 	//Calc File size in block
 	init_block_size = file->inode.file_size / G_super_block.b_size;
 	if(file->inode.file_size % G_super_block.b_size != 0)
 		init_block_size++;	
 			
 	//Calc File size in block AFTER wirting
-	final_block_size = file->current_block + ((file->cursor_byte + byte) / G_super_block.block_size);
-	if((file->cursor_byte + byte) % G_super_block.block_size != 0)
+	final_block_size = file->cursor_block + ((file->cursor_byte + byte) / G_super_block.b_size);
+	if((file->cursor_byte + byte) % G_super_block.b_size != 0)
 		final_block_size++;
 	
 	//If we need more space give it
@@ -362,6 +364,7 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 		}
 	}		
 
+	file->inode.file_size += nb_byteWrite ;
 	return nb_byteWrite ;
 	
 	return 0;
@@ -370,5 +373,30 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 
 
 void mfs_alloc_block(T_File *file, uint32_t block){
+	int fileSizeBlk = 0;
+
+	fileSizeBlk = file->inode.file_size / G_super_block.b_size ;
+	if(file->inode.file_size % G_super_block.b_size != 0 ) 
+		fileSizeBlk ++;
 	
+	while(block!=0){
+		if(fileSizeBlk<12){ //Direct Block
+			seek_to_Bbitmap();
+			file->inode.d_block[fileSizeBlk] = first_free_bitmap();
+			change_block_status(file->inode.d_block[fileSizeBlk]);
+			fileSizeBlk++;
+
+		}else if(fileSizeBlk < ADR_BLK_SIZE + 12){ //Indirect Block
+
+		}else if(fileSizeBlk < ( ADR_BLK_SIZE * ADR_BLK_SIZE ) + 12 ){ //Double Indirect Block
+	
+		}else if(fileSizeBlk < ( ADR_BLK_SIZE * ADR_BLK_SIZE * ADR_BLK_SIZE )+ 12){ //Triple INdirect block
+
+		}else{ //Error file too large
+
+		}
+
+		block--;
+
+	}
 }

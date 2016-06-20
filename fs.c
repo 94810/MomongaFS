@@ -154,6 +154,11 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
                 {
                      disk_seek(inode_current->d_block[12]+4*k);
                      disk_read(&current_block,4);
+                     if (k==256)
+                     {
+                         k=0;
+                         j++;
+                     }
                 }
                 if (j<12)
                 {

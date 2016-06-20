@@ -182,6 +182,15 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     }//Bon techniquement là on doit avoir l'inode du fichier recherché.
 
 //                                  --- Partie 3: Construction du tableau de blocs ---
+
+    free (line);
+    file->inode_nb=line_inode;
+    file->inode=*inode_current;
+    file->cursor_byte=0;
+    file->cursor_block=0;
+    file->mod=mod;
+    int block_size=((inode_current->file_size)/G_super_block.b_size)+(1 file_size % G_super_block.b_size!=0);
+
     
 }
 

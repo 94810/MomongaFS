@@ -138,9 +138,11 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
 //                                  --- Partie 3: Construction du tableau de blocs ---
     
 }
+
 int mfs_close(T_File* file){
 
-	file->mod = 0 ; //Can't read or write
+	file->mod = 0 ; //Can't read or writei
+	free(file->block);
 	return inode_write(&(file->inode), file->inode_nb) ;
 
 }

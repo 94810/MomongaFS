@@ -1,5 +1,143 @@
 #include "fs.h"
 
+int mfs_open(const char* path, uint8_t mod, T_File * file){
+
+    //                          --- Part 1: Découpage du chemin ---
+    int  n_words=0, i, j, size=0;
+    char c, ** ret=NULL, ** new_ret=NULL, *word=NULL, *new_word=NULL;
+    do{
+         c=command[i];
+         while (c!='\n' && c!='\0'&& c!='/')
+         {
+             size++;
+             new_word=(char*)malloc((size + 1)*sizeof(char));
+             if(word==NULL)
+             {
+                 new_word[0]=c;
+                 
+             }
+             else
+             {
+                 strcpy(new_word, word);
+                 new_word[(size-1)]=c;
+                 new_word[size]='\0';
+                 free(word);
+             }
+             word=new_word;
+             new_word=NULL;
+             i++;
+             c=command[i];
+         }
+         size=0;
+         n_words++;
+         new_ret=(char**)malloc(n_words*sizeof(char*));
+         if (ret==NULL)
+         {
+             new_ret[0]=word;
+             word=NULL;
+         }
+         else
+         {
+             for(j=0;j<(n_words-1);j++)
+             {
+                 new_ret[j]=ret[j];
+             }
+             new_ret[(n_words-1)]=word;
+             free(ret);
+         }
+         ret=new_ret;
+         new_ret=NULL;
+         i++;
+    }while(c!='\0' && c!='\n');
+//                      --- Partie 2: Recherche du fichier ---
+// n_words correspond a la Profondeur du fichier.
+    uint32_t line_inode, size_to_read, block_size, current_block;
+    char * next, *line=NULL, new_line=NULL;
+    int found=0, k=0;
+    T_inode* inode_current;
+    i=0;
+    j=0;
+    load_inode(inode_current, ROOT_DIRECTORY_INODE);
+    size_to_read=inode_current->file_size;
+    block_size=G_super_block.b_size;
+    for (i=0;i<n_words;i++)                     //Chemin
+    {
+        next=res[i];
+        current_block=inode_current.d_block[0];
+        do                                      //Blocks
+        {
+            mfs_block_seek(current_block);
+            do
+            {
+                disk_read(&line_inode,4);
+                block_size-=4;
+                size_to_read-=4;
+                disk_read(&c,1);
+                size=1;
+                while (c!='\n' && block_size!=0)
+                {
+                    new_line=(char*)malloc((size + 1)*sizeof(char));
+                    if(line==NULL)
+                    {
+                        new_line[0]=c;
+                        new_line[1]='\0';
+                    }
+                    else
+                    {
+                        strcpy(new_line, line);
+                        new_line[(size-1)]=c
+                        new_line[size]='\0';
+                        free(line);
+                    }
+                    line=new_line;
+                    new_line=NULL;
+                    block_size--;
+                    size_to_read--;
+                    disk_read(&c,1);
+                }
+                if (strcmp(next,line)==0){
+                    found=1;
+                }
+                else
+                {
+                    found=0;
+                    free(line);
+                }
+            }while (!found && block_size!=0 && size_to_read!=0);//On récupère la ligne d'après si ce n'est pas la bonne
+            if (!found)
+            {                   //On change de block
+                if (j==12)
+                {
+                    current_block=inode_current.d_block[12][k];
+                    k++;
+                    if (k==256)
+                    {
+                        j++;
+                        k=0;
+                    }
+                }
+                else
+                {
+                    j++;
+                    current_block=inode_current.d_block[j];
+                }
+                block_size=G_super_block.b_size;
+            }
+        }while(!found && size_to_read!=0)
+        if (found)
+        {
+            inode_current=line_inode;
+            i++;
+        }
+        else
+        {
+            return -1; //fichier non trouvé
+        }
+    }//Bon techniquement là on doit avoir l'inode du fichier recherché.
+
+//                                  --- Partie 3: Construction du tableau de blocs ---
+    
+}
 int mfs_close(T_File* file){
 
 	file->mod = 0 ; //Can't read or write
@@ -7,7 +145,7 @@ int mfs_close(T_File* file){
 
 }
 
-int mfs_block_seek(unsigned int block){
+int mfs_block_seek(uint32_t block){
 	return disk_seek(block*G_super_block.b_size) ;	
 }
 

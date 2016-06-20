@@ -18,7 +18,7 @@ typedef struct FD{
 } T_File;
 
 int mfs_open(const char* Path, uint8_t mod, T_File* file) ; // 0 open sucess -1 fail
-int mfs_block_seek(unsigned int block) ; //Goes to block number "block" 
+int mfs_block_seek(uint32_t block) ; //Goes to block number "block" 
 void mfs_file_seek(T_File file, unsigned int byte) ; //move cursor to byte number "byte" in file
 int mfs_creat(const char* Path) ;
 int mfs_close(T_File* file) ; // Write T_File.inode on disk and change mod to 0

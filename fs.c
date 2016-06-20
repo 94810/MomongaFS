@@ -336,4 +336,6 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 
 
 
-
+void mfs_alloc_block(T_File *file, uint32_t block){
+	
+}

@@ -3,7 +3,7 @@
 int mfs_open(const char* path, uint8_t mod, T_File * file){
 
     //                          --- Part 1: Découpage du chemin ---
-    int  n_words=0, i, j, size=0;
+    uint32_t  n_words=0, i, j, size=0;
     char c, ** ret=NULL, ** new_ret=NULL, *word=NULL, *new_word=NULL;
     do{
          c=path[i];
@@ -152,14 +152,8 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
                 }
                 if (j==12)// les blocks indirects
                 {
-                    disk_seek((inode_current->d_block[12])+4*k);
-                    disk_read(&current_block,4);
-                    k++;
-                    if (k==256)
-                    {
-                        k=0;
-                        j++;
-                    }
+                     disk_seek(inode_current->d_block[12]+4*k);
+                     disk_read(&current_block,4);
                 }
                 if (j<12)
                 {
@@ -189,15 +183,49 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     file->cursor_byte=0;
     file->cursor_block=0;
     file->mod=mod;
-    int block_size=((inode_current->file_size)/G_super_block.b_size)+(1 file_size % G_super_block.b_size!=0);
-
-    
+    int block_n=((inode_current->file_size)/G_super_block.b_size)+(1*inode_current->file_size % G_super_block.b_size!=0);
+    file->blocks=(uint32_t *)malloc(block_n*sizeof(uint32_t));
+    for (i=0;i<block_n;i++)
+    {
+        if (i<12)//direct
+        {
+            file->blocks[i]=inode_current->d_block[i];
+        }
+        else if (i<268)//indirect
+        {
+            j=i-12;
+            disk_seek(inode_current->d_block[12]+4*j);
+            disk_read(&(file->blocks[i]),4);
+        }
+        else if (i<65804)//indirect double
+        {
+            j=(i-268)%256;
+            k=((i-268)-k)/256;
+            disk_seek(inode_current->d_block[13]+4*k);
+            disk_read(&current_block,4);
+            disk_seek(current_block+4*j);
+            disk_read(&(file->blocks[i]),4);
+        }
+        else if (i<16843020)//indirect triple
+        {
+            j=(i-65804)%256;
+            l=(i-65804-j)/65536;
+            k=(i-65804-j-(l*65536))/256;
+            disk_seek(inode_current->d_block[14]+4*l);
+            disk_read(&current_block,4);
+            disk_seek(current_block+4*k);
+            disk_read(&current_block,4);
+            disk_seek(current_block+4*j);
+            disk_read(&(file->blocks[i]),4);
+        }
+    }
+    return 0;
 }
 
 int mfs_close(T_File* file){
 
 	file->mod = 0 ; //Can't read or writei
-	free(file->block);
+	free(file->blocks);
 	return inode_write(&(file->inode), file->inode_nb) ;
 
 }

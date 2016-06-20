@@ -57,7 +57,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     T_inode* inode_current;
     i=0;
     j=0;
-    load_inode(inode_current, ROOT_DIRECTORY_INODE);
+    inode_load(inode_current, ROOT_DIRECTORY_INODE);
     block_size=G_super_block.b_size;
     for (i=0;i<n_words;i++)                     //Chemin
     {

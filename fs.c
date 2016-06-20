@@ -184,9 +184,11 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
 //                                  --- Partie 3: Construction du tableau de blocs ---
     
 }
+
 int mfs_close(T_File* file){
 
-	file->mod = 0 ; //Can't read or write
+	file->mod = 0 ; //Can't read or writei
+	free(file->block);
 	return inode_write(&(file->inode), file->inode_nb) ;
 
 }
@@ -195,15 +197,14 @@ int mfs_block_seek(uint32_t block){
 	return disk_seek(block*G_super_block.b_size) ;	
 }
 
-void mfs_file_seek(T_File file, unsigned int byte){
+void mfs_file_seek(T_File* file, unsigned int byte){
 	file->cursor_block = byte / G_super_block.b_size ;
 	file->cursor_byte = byte % G_super_block.b_size ;
-	return 0 ;
 }
 
 int mfs_read(T_File* file , void* buff, uint32_t byte){
 	
-	uint8_t* f_buff ;
+	uint8_t* f_buff = buff;
 	
 	unsigned int nb_bitread = 0, to_read = 0, i=0 ;
 
@@ -212,7 +213,6 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 
 	if(file->cursor_block*G_super_block.b_size + file->cursor_byte + byte > file->inode.file_size)
 		byte =  file->inode.file_size - file->cursor_block*G_super_block.b_size + file->cursor_byte ; 
-	f_buff = malloc(byte*sizeof(uint8_t)) ;
 	
 	if(f_buff==NULL)
 		return -1;

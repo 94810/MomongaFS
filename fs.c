@@ -6,7 +6,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     int  n_words=0, i, j, size=0;
     char c, ** ret=NULL, ** new_ret=NULL, *word=NULL, *new_word=NULL;
     do{
-         c=command[i];
+         c=path[i];
          while (c!='\n' && c!='\0'&& c!='/')
          {
              size++;
@@ -26,7 +26,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
              word=new_word;
              new_word=NULL;
              i++;
-             c=command[i];
+             c=path[i];
          }
          size=0;
          n_words++;
@@ -52,18 +52,18 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
 //                      --- Partie 2: Recherche du fichier ---
 // n_words correspond a la Profondeur du fichier.
     uint32_t line_inode, size_to_read, block_size, current_block;
-    char * next, *line=NULL, new_line=NULL;
-    int found=0, k=0;
+    char * next, *line=NULL, *new_line=NULL;
+    int found=0, k=0, m=0, l=0;
     T_inode* inode_current;
     i=0;
     j=0;
     load_inode(inode_current, ROOT_DIRECTORY_INODE);
-    size_to_read=inode_current->file_size;
     block_size=G_super_block.b_size;
     for (i=0;i<n_words;i++)                     //Chemin
     {
-        next=res[i];
-        current_block=inode_current.d_block[0];
+        next=ret[i];
+        current_block=inode_current->d_block[0];
+        size_to_read=inode_current->file_size;
         do                                      //Blocks
         {
             mfs_block_seek(current_block);
@@ -85,7 +85,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
                     else
                     {
                         strcpy(new_line, line);
-                        new_line[(size-1)]=c
+                        new_line[(size-1)]=c;
                         new_line[size]='\0';
                         free(line);
                     }
@@ -95,7 +95,8 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
                     size_to_read--;
                     disk_read(&c,1);
                 }
-                if (strcmp(next,line)==0){
+                if (strcmp(next,line)==0)
+                {
                     found=1;
                 }
                 else
@@ -106,28 +107,73 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
             }while (!found && block_size!=0 && size_to_read!=0);//On récupère la ligne d'après si ce n'est pas la bonne
             if (!found)
             {                   //On change de block
-                if (j==12)
+                if (j==14)
                 {
-                    current_block=inode_current.d_block[12][k];
-                    k++;
+                    disk_seek((inode_current->d_block[14])+4*k);
+                    disk_read(&current_block,4);
+                    disk_seek(current_block+4*l);
+                    disk_read(&current_block,4);
+                    disk_seek(current_block+4*m);
+                    disk_read(&current_block,4);
+                    m++;
+                    if (m==256)
+                    {
+                        l++;
+                        m=0;
+                    }
+                    if (l==256)
+                    {
+                        k++;
+                        l=0;
+                    }
                     if (k==256)
                     {
                         j++;
                         k=0;
                     }
                 }
-                else
+                if (j==13)// les blocks doublements indirects
+                {
+                    disk_seek((inode_current->d_block[13])+4*k);
+                    disk_read(&current_block,4);
+                    disk_seek(current_block+4*l);
+                    disk_read(&current_block,4);
+                    l++;
+                    if (l==256)
+                    {
+                        k++;
+                        l=0;
+                    }
+                    if (k==256)
+                    {
+                        j++;
+                        k=0;
+                    }
+                }
+                if (j==12)// les blocks indirects
+                {
+                    disk_seek((inode_current->d_block[12])+4*k);
+                    disk_read(&current_block,4);
+                    k++;
+                    if (k==256)
+                    {
+                        k=0;
+                        j++;
+                    }
+                }
+                if (j<12)
                 {
                     j++;
-                    current_block=inode_current.d_block[j];
-                }
+                    current_block=inode_current->d_block[j];
+                 }
+             }
                 block_size=G_super_block.b_size;
-            }
-        }while(!found && size_to_read!=0)
+        }while(!found && size_to_read!=0);
         if (found)
         {
-            inode_current=line_inode;
+            inode_load(inode_current, line_inode);
             i++;
+            j=0;
         }
         else
         {

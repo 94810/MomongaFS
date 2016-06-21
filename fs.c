@@ -14,7 +14,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
              if(word==NULL)
              {
                  new_word[0]=c;
-                 
+                 new_word[size]='\0';
              }
              else
              {

@@ -55,7 +55,7 @@ unsigned int first_free_bitmap(){
 	uint8_t buff=0, mask;
 	
 
-	while(cont){
+	while(cont==1){
 		mask=0b10000000; //Set the mask for testting the first bit of the byte
 		disk_read(&buff, 1); //Read a byte
 		for(i=0; i<8; i++){
@@ -82,8 +82,7 @@ unsigned int first_free_bitmap(){
 			 }else
 				mask = mask >> 1; //Shift to next one			
 		}
-
-		if(cont)
+		if(cont==1)
 			byte_count++;
 	}
 

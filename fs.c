@@ -262,14 +262,14 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 	
 	disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte) ;
 	
-	if(byte > (8-file->cursor_byte)){
-		to_read=8-file->cursor_byte ;
+	if(byte > (G_super_block.b_size-file->cursor_byte)){
+		to_read=G_super_block.b_size-file->cursor_byte ;
 		disk_read(f_buff, to_read);
 		nb_bitread=to_read;
 		file->cursor_block++;
 		file->cursor_byte=0;            //On se calle sur le prochain block
 
-		to_read = byte-nb_bitread / 8 ; //On regarde le nombre de block a lire
+		to_read = byte-nb_bitread / G_super_block.b_size ; //On regarde le nombre de block a lire
 
 		for(i=0 ; i<to_read ; i++){
 			disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte);
@@ -294,7 +294,7 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 		
 		file->cursor_byte+=byte ;
 
-		if(file->cursor_byte > 7){
+		if(file->cursor_byte > G_super_block.b_size){
 			file->cursor_block++;
 			file->cursor_byte=0;
 		}
@@ -319,21 +319,23 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 		final_block_size++;
 	
 	//If we need more space give it
-	if(init_block_size<final_block_size)
+	if(init_block_size<final_block_size){
 		mfs_alloc_block(file, final_block_size-init_block_size);
+		printf("coucou\n");	
+	}
 	
 	//On écrit 
 	
 	disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte) ;
 	
-	if(byte > (8-file->cursor_byte)){
-		to_write=8-file->cursor_byte ;
+	if(byte > (G_super_block.b_size-file->cursor_byte)){
+		to_write=G_super_block.b_size-file->cursor_byte ;
 		disk_write(f_buff, to_write);
 		nb_byteWrite=to_write;
 		file->cursor_block++;
 		file->cursor_byte=0;            //On se calle sur le prochain block
 
-		to_write = byte-nb_byteWrite / 8 ; //On regarde le nombre de block a écrire
+		to_write = byte-nb_byteWrite / G_super_block.b_size ; //On regarde le nombre de block a écrire
 
 		for(i=0 ; i<to_write ; i++){
 			disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte);
@@ -358,7 +360,7 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 		
 		file->cursor_byte+=byte ;
 
-		if(file->cursor_byte > 7){
+		if(file->cursor_byte > G_super_block.b_size){
 			file->cursor_block++;
 			file->cursor_byte=0;
 		}
@@ -370,10 +372,9 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 	return 0;
 }
 
-
-
-void mfs_alloc_block(T_File *file, uint32_t block){
+int mfs_alloc_block(T_File *file, uint32_t block){
 	int fileSizeBlk = 0;
+	uint32_t tmp=0, kek=block;
 
 	fileSizeBlk = file->inode.file_size / G_super_block.b_size ;
 	if(file->inode.file_size % G_super_block.b_size != 0 ) 
@@ -387,16 +388,85 @@ void mfs_alloc_block(T_File *file, uint32_t block){
 			fileSizeBlk++;
 
 		}else if(fileSizeBlk < ADR_BLK_SIZE + 12){ //Indirect Block
+			if(fileSizeBlk==12){
+				seek_to_Bbitmap();
+				file->inode.d_block[INDIRECT_BLOCK] = first_free_bitmap();
+				change_block_status(file->inode.d_block[fileSizeBlk]);
+			}
 
-		}else if(fileSizeBlk < ( ADR_BLK_SIZE * ADR_BLK_SIZE ) + 12 ){ //Double Indirect Block
-	
+			disk_seek(file->inode.d_block[INDIRECT_BLOCK]+(fileSizeBlk-12));
+			seek_to_Bbitmap();
+			tmp = first_free_bitmap();
+			disk_write(&tmp, 4);
+			change_block_status(tmp);
+		}/*else if(fileSizeBlk < ( ADR_BLK_SIZE * ADR_BLK_SIZE ) + 12 ){ //Double Indirect Block
+				
 		}else if(fileSizeBlk < ( ADR_BLK_SIZE * ADR_BLK_SIZE * ADR_BLK_SIZE )+ 12){ //Triple INdirect block
 
-		}else{ //Error file too large
-
+		}*/else{ //Error file too large
+			return -1;			
 		}
 
 		block--;
 
 	}
+
+	inode_write(&(file->inode), file->inode_nb) ;
+	
+	mfs_reload(file, kek);
+
+	return 0;
+}
+
+void mfs_reload (T_File* file, uint32_t block){
+	uint32_t virtual_size=0, i=0, j=0; 
+	
+	
+	inode_load(&(file->inode), file->inode_nb);
+	
+	virtual_size = file->inode.file_size + block*G_super_block.b_size ;
+
+	file->blocks = malloc(virtual_size);
+	
+	i=virtual_size / G_super_block.b_size;	
+	if(virtual_size % G_super_block.b_size != 0)
+		i ++;
+
+	
+	for(j=0;j<i;j++){
+		if(j<12){
+			file->blocks[j]=file->inode.d_block[j];
+		}else if(j==12){
+			disk_seek(file->inode.d_block[INDIRECT_BLOCK]);
+			disk_read(&(file->blocks[j]),4);
+		}
+		else if(j < ADR_BLK_SIZE + 12){	
+			disk_read(&(file->blocks[j]),4);
+		}else{
+			printf("System Error ! File too big\n");
+		}
+	}
+	
+}
+
+int mfs_creat(const char* Path){
+
+	int i=0;
+	T_inode inode;
+	
+	inode.file_size=0;
+	inode.file_mode=0b00000000;
+	
+	for(i=0; i<=15; i++){
+		inode.d_block[i]=0;
+	}	
+
+	seek_to_Ibitmap();	
+	i = first_free_bitmap();
+
+	change_inode_status(i);
+		
+	inode_write(&inode, i);
+
+	return i;
 }

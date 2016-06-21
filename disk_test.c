@@ -44,9 +44,13 @@ void main(){
 
 	mfs_write(&file, &lel, 6);
 	
+	seek_to_Bbitmap();
+	printf("main : %d", first_free_bitmap());
+	
 	char lal[6]={"WORLD"};
-
 	mfs_write(&file, &lal, 6);
+
+// Second fichier
 	
 	file.inode_nb = mfs_creat("/");
 
@@ -59,7 +63,6 @@ void main(){
 	
 	seek_to_Ibitmap();
 	change_bit(file.inode_nb);	
-
 	seek_to_Bbitmap();
 	printf("main : %d", first_free_bitmap());
 		
@@ -67,5 +70,9 @@ void main(){
 	
 	char kel[6]={"kekek"};
 	mfs_write(&file, &kel, 6);
+
+	seek_to_Bbitmap();
+	printf("main : %d", first_free_bitmap());
+	
 	disk_close();
 }

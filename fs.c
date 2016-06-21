@@ -262,14 +262,14 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 	
 	disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte) ;
 	
-	if(byte > (8-file->cursor_byte)){
-		to_read=8-file->cursor_byte ;
+	if(byte > (G_super_block.b_size-file->cursor_byte)){
+		to_read=G_super_block.b_size-file->cursor_byte ;
 		disk_read(f_buff, to_read);
 		nb_bitread=to_read;
 		file->cursor_block++;
 		file->cursor_byte=0;            //On se calle sur le prochain block
 
-		to_read = byte-nb_bitread / 8 ; //On regarde le nombre de block a lire
+		to_read = byte-nb_bitread / G_super_block.b_size ; //On regarde le nombre de block a lire
 
 		for(i=0 ; i<to_read ; i++){
 			disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte);
@@ -294,7 +294,7 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 		
 		file->cursor_byte+=byte ;
 
-		if(file->cursor_byte > 7){
+		if(file->cursor_byte > G_super_block.b_size){
 			file->cursor_block++;
 			file->cursor_byte=0;
 		}
@@ -319,21 +319,23 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 		final_block_size++;
 	
 	//If we need more space give it
-	if(init_block_size<final_block_size)
+	if(init_block_size<final_block_size){
 		mfs_alloc_block(file, final_block_size-init_block_size);
+		printf("coucou\n");	
+	}
 	
 	//On écrit 
 	
 	disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte) ;
 	
-	if(byte > (8-file->cursor_byte)){
-		to_write=8-file->cursor_byte ;
+	if(byte > (G_super_block.b_size-file->cursor_byte)){
+		to_write=G_super_block.b_size-file->cursor_byte ;
 		disk_write(f_buff, to_write);
 		nb_byteWrite=to_write;
 		file->cursor_block++;
 		file->cursor_byte=0;            //On se calle sur le prochain block
 
-		to_write = byte-nb_byteWrite / 8 ; //On regarde le nombre de block a écrire
+		to_write = byte-nb_byteWrite / G_super_block.b_size ; //On regarde le nombre de block a écrire
 
 		for(i=0 ; i<to_write ; i++){
 			disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte);
@@ -358,7 +360,7 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 		
 		file->cursor_byte+=byte ;
 
-		if(file->cursor_byte > 7){
+		if(file->cursor_byte > G_super_block.b_size){
 			file->cursor_block++;
 			file->cursor_byte=0;
 		}

@@ -34,7 +34,7 @@ int mfs_alloc_block(T_File *file, uint32_t block); /* Allocate "block" block for
 
 void mfs_cat(const char* path,T_File * file);
 void mfs_ls(const char* path,T_File * file);
-int mfs_assert(const char* path,char* buff,T_File * file);
+void mfs_assert(const char* path,char* buff,T_File * file);
 
 
 void mfs_reload(T_File* file, uint32_t block);

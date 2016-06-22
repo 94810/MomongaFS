@@ -555,3 +555,60 @@ int mfs_creat(const char* Path, char* name){
 
 	return j;
 }
+
+void mfs_cat(const char* path,T_File * file){
+    
+    char cat_buff;
+    int lu;
+    
+    if(file->inode.file_mod & 0b10000000 == 0)
+    {
+        mfs_open(path,READ,file);
+        do
+        {
+            lu=mfs_read(file,cat_buff,1);
+            if(lu!=0)
+                printf("%c",&buff);
+        }while(lu!=0);
+        
+        mfs_close(file);
+    }
+    
+   else
+   {    
+       printf("Ce n'est pas un fichier !\n"); 
+   }
+   
+}
+
+
+void mfs_ls(const char* path,T_File * file){
+    
+    char ls_buff;
+    int lu,i;
+    
+    
+     if(file->inode.file_mod & 0b10000000 == 0)
+    {
+        printf("Ce n'est pas un répertoire\n");
+    }
+    
+    else
+    {
+        mfs_open(path,READ,file);
+        do
+        {
+            do
+            {
+                for(i=0;i<4;i++)
+                lu=mfs_read(file,ls_buff,1);
+                
+                lu=mfs_read(file,ls_buff,1);
+                    printf("%c",&buff);
+            }while(ls_buff!='\n');
+        }while(lu!=0);
+            
+        mfs_close(file);
+    }
+}
+   

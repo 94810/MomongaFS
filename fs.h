@@ -38,4 +38,5 @@ void mfs_assert(const char* path,char* buff,T_File * file);
 
 
 void mfs_reload(T_File* file, uint32_t block);
+char* read_file_name(T_File* file); //Warning  cursor need to in place
 #endif

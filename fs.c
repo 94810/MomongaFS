@@ -95,12 +95,66 @@ char ** mfs_path_process(const char* path, int* path_size){
 }
 
 
+char* read_file_name(T_File* file){
+	char* chaine=NULL, buff=NULL;
+	char actl=0, nb=0, i=0;
+
+	do{
+		mfs_read(file, &actl, 1);
+		nb++;
+		buff = malloc(nb*sizeof(char));
+		for(i=0 ; i<nb-1 ; i++){
+			buff[i]=chaine[i];
+		}
+		if(actl!='\n')
+			buff[nb-1]=actl;
+		else
+			buuf[nb-1]='\0';
+		free(chaine);
+		chaine=buff;
+	}while(actl!='\n');
+
+	return chaine;
+}
+
 uint32_t mfs_get_inode(uint32_t n_words, char** ret){
+	T_File curr ;
+	char* line=NULL;
+	uint32_t i_nb;
+	int i=0;
 	
+	mfs_const_fd(&curr, 0, READ);
 	
-}	
+	for(i=0; i<n_words; i++){
+		while(k!=0){
+			free(line);
+			k = read(&curr, &i_nb, 4);
+			line = read_file_name(&curr);
+			if(strcmp(line, ret[i])==0){
+				
+				break;
+			}	
 
+			if(k==0){
+				return 0;
+			}
+		}
 
+		mfs_const_fd(&curr, i_nb);
+	}
+
+	return i_nb;
+}
+
+void mfs_const_fd(T_File* file, uint32_t i_nb, uint32_t mod){
+	file->inode_nb = i_nb; //Charge inode nb
+	inode_load(&(file->inode), file->inode_nb); //Load inode
+	file->cursor_block= 0; //Place cursor
+	file->cursor_byte = 0;
+	file->mod = mod; // Set mod
+}
+
+/*
 uint32_t mfs_get_inode(uint32_t n_words, char** ret){
 //                      --- Partie 2: Recherche du fichier ---
 // n_words correspond a la Profondeur du fichier.
@@ -241,7 +295,7 @@ uint32_t mfs_get_inode(uint32_t n_words, char** ret){
             return ROOT_DIRECTORY_INODE; //fichier non trouvé
         }
     }//Bon techniquement là on doit avoir l'inode du fichier recherché.
-}
+}*/
 /*                                 --- Partie 3: Construction du tableau de blocs ---
 
     free (line);

@@ -20,7 +20,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     mfs_reload(file, 0);
     file->cursor_block=0;
     file->cursor_byte=0;
-    mfs_reload(&file_descriptor,0);
+    mfs_reload(file ,0);
 }
     //                          --- Part 1: Découpage du chemin ---
 char ** mfs_path_process(const char* path, int* path_size){

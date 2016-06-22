@@ -54,8 +54,6 @@ void main(){
 	mfs_creat("/", "pepito");	
 	mfs_creat("/", "Jean-Louis");	
 
-	mfs_open("pepito", READ|WRITE, &file);
-	printf("Open %d", file.inode_nb);
 		
 	disk_close();
 }

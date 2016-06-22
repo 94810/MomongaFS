@@ -4,6 +4,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     uint32_t  path_size, i_n_lel;
     char ** processed_path;
     T_inode* i_lel;
+    T_File file_descriptor;
     processed_path=mfs_path_process(path, &path_size);
     if (processed_path[0][0]!='/')
     {
@@ -13,7 +14,14 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     {
         i_n_lel=ROOT_DIRECTORY_INODE;
     }
-        inode_load(i_lel,i_n_lel);
+    inode_load(i_lel,i_n_lel);
+    file_descriptor.inode_nb=i_n_lel;
+    file_descriptor.inode=*i_lel;
+    file_descriptor.cursor_block=0;
+    file_descriptor.cursor_byte=0;
+    file_descriptor.mod=mod;
+    mfs_reload(&file_descriptor,0);
+    *file=file_descriptor;
 }
     //                          --- Part 1: Découpage du chemin ---
 char ** mfs_path_process(const char* path, int* path_size){

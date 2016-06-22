@@ -13,7 +13,7 @@
         ISTY-IATIC-3
         \vskip 3pt
         \large Projet-Système - Dossier Momonga FS
-    \author{Matthieu BRETTE-Pablo BOURDELAS-Sébatien POIROT-Guillaume RYCKAERT}
+    \author{Mathieu BRETTE \and Pablo BOURDELAS \and Sébastien POIROT\and Guillaume RYCKAERT}
     \end{minipage}
  }
  \maketitle
@@ -22,10 +22,63 @@
 
  Le but de ce projet est de créer un Système de fichiers(SGF) en C, en implémentant des primitives, un shell, ainsi que la sauvegarde/recharge du disque.
 
-Nous avons donc choisi de créer un SGF travaillant sur un disque virtuel, stocké sous la forme d'un fichier nommé vdisk
+Nous avons donc choisi de créer un SGF travaillant sur un disque virtuel, stocké sous la forme d'un fichier nommé vdisk. Le SGF devra être capable de créer un disque virtuel, de créer et supprimer des fichiers et des dossiers, ainsi que d'afficher leur contenu.
+\vskip 10pt
+\begin{figure}[ht!]
+        \centering
+        \includegraphics[width=125mm]{momonga.png}
+\end{figure}
+
+\newpage
+
+\section*{Structure du disque}
+Le disque est composé des différentes structures suivantes:
+\begin{itemize}
+\item Le SuperBlock
+\item Les inodes
+\item L'Inode Bitmap
+\item La Block Bitmap
+\item Les Data
+\end{itemize}
+
+\subsection*{Le SuperBlock}
+Le SuperBlock contient les informations essentielles du disque,\\comme par exemple: 
+\begin{itemize}
+\item Le nombre total d'inodes sur le disque
+\item Le nombre total de blocks de données sur le disque
+\item Le nombre de blocks libres
+\item Le nombre d'inodes libres
+\item La taille des blocks (en bytes)
+\item Ainsi que le numéro du premier block de données
+\end{itemize}
+Le superblock est chargé en même temps que le disque, dans le cas de la création d'un disque, il est automatiquement crée. Nous acons choisi de déclarer le SuperBlock en global, car il est utilisé dans de nombreuses fonction du SGF.
+\subsection*{Les inodes}
+Chaque inode représente un fichier/dossier sur le disque. L'inode fournit les informations suivantes:
+\begin{itemize}
+    \item La taille des données du fichier.\footnote{Pour les dossiers, voir plus bas.}
+    \item Une valeur représentant les droits d'acces, ainsi que la nature(fichier/dossier).
+    \item Un tableau de 15 numéros de blocks, les 12 premiers représentent les blocks contenant les données du dossier/fichier.Le 13ème est le numéro de block indirect: ce block contient des numéros de blocks appartenant au fichier.De même pour le 14ème block qui est double indirect, et pour le 15ème, qui est triple indirect.
+    \item Un nombre représentant la dernière fois que le fichier a été modifié.\footnote{Non implémenté}
+    \item Le nombre de liens symboliques se référrant a cet inode.
+\end{itemize}
+Chaque fichier/dossier a son inode. Dans le cas d'un dossier, les données stockées sont une liste de numéros d'inodes, ainsi que le nom du fichier/dossier qu'ils représentent. Dans ce cas, la taille des données inscrite dans l'inode est la taille des données précedemment décrites.
+
+
+ 
 
 
 
 
+
+\section*{Fonctions implémentées}
+
+
+\section*{Répartiton du travail}
+
+\section*{Difficultés Rencontrées}
+
+
+
+\section*{Conclusion}
 
 \end{document}

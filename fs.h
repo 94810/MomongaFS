@@ -17,7 +17,7 @@ typedef struct FD{
 	uint8_t mod ;
 	uint32_t*  blocks ; 
 } T_File;
-
+void mfs_init();
 int mfs_open(const char* Path, uint8_t mod, T_File* file) ; // 0 open sucess -1 fail
 char** mfs_path_process(const char* Path, int* path_size) ; // cuts the path
 uint32_t mfs_get_inode(uint32_t path_size, char** path);

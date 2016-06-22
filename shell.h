@@ -7,6 +7,9 @@
 //MACROS SHELL
 
 #define COMMAND_EXIT "exit"
+#define COMMAND_CAT "cat"
+#define COMMAND_LS "ls"
+
 
 //Prototypes//
 

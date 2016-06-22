@@ -46,11 +46,7 @@ void main(){
 
 		change_inode_status(0);
 	}
-
-	disk_open("vdisk");
-	
-	sBk_load();
-	
+		
 	mfs_creat("/", "pepito");	
 	mfs_creat("/", "Jean-Louis");	
 

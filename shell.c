@@ -33,7 +33,7 @@ char** user_input (int* p_size){
             i++;
             c=command[i];
         }
-        printf("get_word %s \n",word);
+       // printf("get_word %s \n",word);
         size=0;
         n_words++;
         new_ret=(char**)malloc(n_words*sizeof(char*));
@@ -69,14 +69,13 @@ char** user_input (int* p_size){
     }
 }
 int main (void){
-
     char** user_command=NULL;
     int command_length=0, i=0;
-    //Récup des commnade + exit.
+    mfs_init();
+    //Récup des commnade + exit
     do{
         if (user_command!=NULL)
         {
-            //printf("freed\n");
             for (i=0;i<command_length;i++)
             {
                 free (user_command[i]);
@@ -84,14 +83,11 @@ int main (void){
             free(user_command);
         }
         user_command=user_input(&command_length);
-        if (user_command!=NULL)
-        {    
-            //printf("get_command\n");
+        if (strcmp(COMMAND_LS,user_command[0])!=0)
+        {
+            mfs_ls(path, file);
         }
-
     }while (strcmp(COMMAND_EXIT,user_command[0])!=0);
-        
-
     return 0;
 }
 

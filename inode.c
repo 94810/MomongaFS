@@ -90,7 +90,7 @@ unsigned int first_free_bitmap(){
 }
 
 int change_bit(int n){
-	uint8_t mask, buff, temp;	
+	uint8_t mask, buff, temp, free=1;	
 		
 	if(n>=8) //Only 8 bit on a Byte :p
 		return -1 ;
@@ -101,6 +101,10 @@ int change_bit(int n){
 	mask=0b10000000 ;
 
 	mask = mask >> n ;
+	
+	if(buff&mask == 0){
+		free = 0 ;
+	}
 
 	buff = ( buff & ~mask ) | ( ~buff & mask ) ; /*
 							Using bitwise operand 
@@ -111,27 +115,42 @@ int change_bit(int n){
 	if(disk_write(&buff, 1)==-1) // Writing the result
 		return -1 ;
 
-	return 0;
+	return free;
 		
 }
 
 
 int change_inode_status(unsigned int n){
 	
-	int k = n / 8 ;
+	int k = n / 8 , j=0;
 
 	disk_seek(SUPER_BLOCK_SIZE+(INODE_SIZE*G_super_block.i_count)+k);
 
-	return change_bit(n%8);
+	j=change_bit(n%8);
+
+	if(j==0){	
+		G_super_block.f_inode --;
+	}else if(j==1){
+		G_super_block.f_inode ++;
+	}
+	
+	return j;
 }
 
 int change_block_status(unsigned int n){
 	
-	int k = n / 8 ;
+	int k = n / 8, j=1 ;
 
 	disk_seek(SUPER_BLOCK_SIZE+(INODE_SIZE*G_super_block.i_count)+sBk_calc_iBitmap()+k);
 
-	return change_bit(n%8);
+	j=change_bit(n%8);
+
+	if(j==0){	
+		G_super_block.f_block --;
+	}else if(j==1){
+		G_super_block.f_block ++;
+	}else
+		return j;
 }
 
 

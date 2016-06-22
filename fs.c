@@ -30,7 +30,7 @@ char ** mfs_path_process(const char* path, int* path_size){
     if (path[0]!='/'){
        // printf("lel\n");
         do{
-             c=path[i];
+            c=path[i];
             while (c!='\n' && c!='\0'&& c!='/')
             {
                  size++;
@@ -93,13 +93,22 @@ char ** mfs_path_process(const char* path, int* path_size){
     *path_size=n_words;
     return ret;
 }
+
+
+uint32_t mfs_get_inode(uint32_t n_words, char** ret){
+	
+	
+}	
+
+
 uint32_t mfs_get_inode(uint32_t n_words, char** ret){
 //                      --- Partie 2: Recherche du fichier ---
 // n_words correspond a la Profondeur du fichier.
-uint32_t line_inode, size_to_read, block_size, current_block,i=0,j=0;
-    char * next, *line=NULL, *new_line=NULL, c;
+    uint32_t line_inode, size_to_read, block_size, current_block,i=0,j=0;
+    char *next, *line=NULL, *new_line=NULL, c;
     int found=0, k=0, m=0, l=0,size=0;
     T_inode* inode_current;
+    inode_current = malloc(INODE_SIZE);
     printf("yolo1\n");
     inode_load(inode_current, ROOT_DIRECTORY_INODE);
     block_size=G_super_block.b_size;
@@ -218,6 +227,9 @@ uint32_t line_inode, size_to_read, block_size, current_block,i=0,j=0;
              }
                 block_size=G_super_block.b_size;
         }while(!found && size_to_read!=0);
+
+	free(inode_current);
+	
         if (found)
         {
             i++;
@@ -279,10 +291,9 @@ uint32_t line_inode, size_to_read, block_size, current_block,i=0,j=0;
 
 int mfs_close(T_File* file){
 
-	file->mod = 0 ; //Can't read or writei
+	file->mod = 0 ; //Can't read or write
 	free(file->blocks);
-	return inode_write(&(file->inode), file->inode_nb) ;
-
+	return inode_write(&(file->inode), file->inode_nb);
 }
 
 int mfs_block_seek(uint32_t block){
@@ -299,13 +310,20 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 	uint8_t* f_buff = buff;
 	
 	unsigned int nb_bitread = 0, to_read = 0, i=0 ;
+	
+	int temp=0;
 
 	if(file->mod & READ == 0)
 		return -1;
 
-	if(file->cursor_block*G_super_block.b_size + file->cursor_byte + byte > file->inode.file_size)
-		byte =  file->inode.file_size - file->cursor_block*G_super_block.b_size + file->cursor_byte ; 
-	
+	if(file->cursor_block*G_super_block.b_size + file->cursor_byte + byte > file->inode.file_size){
+		temp =  file->inode.file_size - file->cursor_block*G_super_block.b_size + file->cursor_byte ; 
+		if(temp<0)
+			byte = 0;
+		else
+			byte = temp;
+		
+	}
 	if(f_buff==NULL)
 		return -1;
 
@@ -513,10 +531,11 @@ int mfs_creat(const char* Path, char* name){
 
 	inode.file_size=0;
 	inode.file_mode=0b00000000;
+	inode.link_count=1;
 	
 	for(i=0; i<=15; i++){
 		inode.d_block[i]=0;
-	}	
+	}
 
 	seek_to_Ibitmap();	
 	i = first_free_bitmap();

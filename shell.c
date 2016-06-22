@@ -84,21 +84,29 @@ int main (void){
             free(user_command);
         }
         user_command=user_input(&command_length);
-        if (strcmp(COMMAND_LS,user_command[0])!=0)
+        if (strcmp(COMMAND_LS,user_command[0])==0)
         {
             if (command_length>1)
             {    
                 mfs_ls(user_command[1], file);
             }
         }
-        else if strcmp(COMMAND_CAT,user_command[0]!=0)
+        else if strcmp(COMMAND_CAT,user_command[0]==0)
         {
             if (command_length>1)
             {
                 mfs_cat(user_command[1],file);
             }
         }
+        else if strcmp(COMMAND_ASSERT,user_command[0]==0)
+        {
+            if (command_length>2)
+            {
+                mfs_assert(user_command[1],user_command[2],file);
+            }
+        }
     }while (strcmp(COMMAND_EXIT,user_command[0])!=0);
+    close(vdisk);
     return 0;
 }
 

@@ -61,19 +61,23 @@ Chaque inode représente un fichier/dossier sur le disque. L'inode fournit les i
     \item Un nombre représentant la dernière fois que le fichier a été modifié.\footnote{Non implémenté}
     \item Le nombre de liens symboliques se référrant a cet inode.
 \end{itemize}
-Chaque fichier/dossier a son inode. Dans le cas d'un dossier, les données stockées sont une liste de numéros d'inodes, ainsi que le nom du fichier/dossier qu'ils représentent. Dans ce cas, la taille des données inscrite dans l'inode est la taille des données précedemment décrites.
-
-
- 
-
-
-
-
+Chaque fichier/dossier a son inode. Dans le cas d'un dossier, les données stockées sont une liste de numéros d'inodes, ainsi que le nom du fichier/dossier qu'ils représentent,chaque couple ecrit sur une nouvelle ligne(spéaré par un \textbackslash n). Dans ce cas, la taille des données inscrite dans l'inode est la taille des données précedemment décrites.
+\subsection*{Les bitmaps}
+Il ya deux bitmaps dans le disque, une pour marquer les blocks utilisés, l'autre pour marquer les inodes utilisés. Leur taille est égale au nombre d'inode/blocks divisée par 8.\footnote{0 ou 1 pour utilisé ou pas, 1 inode ou fichier par bit, 8 bits dans un octet.}
+\subsection*{Les données}
+Les données sont stockeés par blocks de taille fixe, définie a la création du disque virtuel. En écriture, le système remplit toujours les premiers blocs libres.
 
 \section*{Fonctions implémentées}
-
+Le shell de notre système ne comprend que 3 fonctions: cat,ls, et assert.
+\subsection*{cat}
+Cette fonction cherche tout simplement l'inode correspondant au chemin passé en paramètre, vérifie qu'il correspond bien a un fichier, puis affiche son contenu jusqu'a ce qu'il aie lu toute la taille du fichier.
+\subsection*{ls}
+ls charge l'inode corresondant, vérifie que c'est un dossier, puis lit les blocks correspondants afin d'afficher le contenu de ce dernier.
+\subsection*{assert}
+assert prend pour arguments un chemin, ainsi qu'une chaîne de caractères, le programme ajoute ensuite la chaine de caractères a la fin du fichier.
 
 \section*{Répartiton du travail}
+
 
 \section*{Difficultés Rencontrées}
 

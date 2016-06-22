@@ -464,6 +464,8 @@ int mfs_creat(const char* Path){
 	seek_to_Ibitmap();	
 	i = first_free_bitmap();
 
+	printf("Creat %d\n", i);
+
 	change_inode_status(i);
 		
 	inode_write(&inode, i);

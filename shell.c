@@ -71,6 +71,7 @@ char** user_input (int* p_size){
 int main (void){
     char** user_command=NULL;
     int command_length=0, i=0;
+    T_file file
     mfs_init();
     //Récup des commnade + exit
     do{
@@ -85,7 +86,17 @@ int main (void){
         user_command=user_input(&command_length);
         if (strcmp(COMMAND_LS,user_command[0])!=0)
         {
-            mfs_ls(path, file);
+            if (command_length>1)
+            {    
+                mfs_ls(user_command[1], file);
+            }
+        }
+        else if strcmp(COMMAND_CAT,user_command[0]!=0)
+        {
+            if (command_length>1)
+            {
+                mfs_cat(user_command[1],file);
+            }
         }
     }while (strcmp(COMMAND_EXIT,user_command[0])!=0);
     return 0;

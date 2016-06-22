@@ -54,6 +54,7 @@ void main(){
 	mfs_creat("/", "pepito");	
 	mfs_creat("/", "Jean-Louis");	
 
+//	mfs_open("pepito/kek", READ|WRITE, &file);		
 		
 	disk_close();
 }

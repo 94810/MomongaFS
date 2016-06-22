@@ -5,9 +5,12 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     char ** processed_path;
     
     processed_path=mfs_path_process(path, &path_size);
+    printf("OPEN : parsed path\n");
+    printf("OPEN : String :%s", processed_path[0]);
 
     if (processed_path[0][0]!='/')
     {
+	printf("OPEN : Get inode nb\n");
         file->inode_nb=mfs_get_inode(path_size,processed_path);
     }
     else 
@@ -16,8 +19,8 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     }
 
     mfs_const_fd(file, file->inode_nb, mod);
-    
-    printf("File open\n");
+   
+	printf("OPEN inode_nb: %d\n", file->inode_nb);
 }
     //                          --- Part 1: Découpage du chemin ---
 char ** mfs_path_process(const char* path, int* path_size){

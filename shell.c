@@ -1,4 +1,5 @@
 #include "shell.h"
+
 //Ne cause pas de fuite mémoire-- Il faut juste bien penser a free tout les mots ainsi que le tableau!
 char** user_input (int* p_size){
 
@@ -71,7 +72,7 @@ char** user_input (int* p_size){
 int main (void){
     char** user_command=NULL;
     int command_length=0, i=0;
-    T_file file
+    T_File file;
     mfs_init();
     //Récup des commnade + exit
     do{
@@ -88,30 +89,25 @@ int main (void){
         {
             if (command_length>1)
             {    
-                mfs_ls(user_command[1], file);
+                mfs_ls(user_command[1]);
             }
         }
-        else if strcmp(COMMAND_CAT,user_command[0]==0)
+        else if(strcmp(COMMAND_CAT,user_command[0])==0)
         {
             if (command_length>1)
             {
-                mfs_cat(user_command[1],file);
+                mfs_cat(user_command[1], &file);
             }
         }
-        else if strcmp(COMMAND_ASSERT,user_command[0]==0)
+        else if (strcmp(COMMAND_ASSERT,user_command[0])==0)
         {
             if (command_length>2)
             {
-                mfs_assert(user_command[1],user_command[2],file);
+                mfs_assert(user_command[1],user_command[2], &file);
             }
         }
     }while (strcmp(COMMAND_EXIT,user_command[0])!=0);
-    close(vdisk);
+    disk_close();
     return 0;
 }
-
-
-
-
-
 

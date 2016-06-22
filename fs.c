@@ -15,12 +15,9 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
         file->inode_nb=ROOT_DIRECTORY_INODE;
     }
 
-    inode_load(&(file->inode),file->inode_nb);
-    file->mod=mod;
-    mfs_reload(file, 0);
-    file->cursor_block=0;
-    file->cursor_byte=0;
-    mfs_reload(file ,0);
+    mfs_const_fd(file, file->inode_nb, mod);
+
+    printf("File open\n");
 }
     //                          --- Part 1: Découpage du chemin ---
 char ** mfs_path_process(const char* path, int* path_size){
@@ -28,7 +25,6 @@ char ** mfs_path_process(const char* path, int* path_size){
     uint32_t  n_words=0, i=0, j, size=0;
     char c, ** ret=NULL, ** new_ret=NULL, *word=NULL, *new_word=NULL;
     if (path[0]!='/'){
-       // printf("lel\n");
         do{
             c=path[i];
             while (c!='\n' && c!='\0'&& c!='/')
@@ -76,18 +72,12 @@ char ** mfs_path_process(const char* path, int* path_size){
     }
     else
     {
-        //printf("lal1\n");
         word=(char*)malloc(2*sizeof(char));
-       // printf("lal2\n");
         word[0]='/';
-       // printf("lal3\n");
         word[1]='\0';
-       // printf("lal4\n");
         ret=(char**)malloc(sizeof(char*));
-       // printf("lal5\n");
         ret[0]=word;
         n_words=1;
-       // printf("lal6\n");
     }
     printf("mfs_open() part 1 done\n");
     *path_size=n_words;
@@ -96,9 +86,9 @@ char ** mfs_path_process(const char* path, int* path_size){
 
 
 char* read_file_name(T_File* file){
-	char* chaine=NULL, buff=NULL;
+	char *chaine=NULL, *buff=NULL;
 	char actl=0, nb=0, i=0;
-
+	printf("Looking for name\n");
 	do{
 		mfs_read(file, &actl, 1);
 		nb++;
@@ -109,11 +99,12 @@ char* read_file_name(T_File* file){
 		if(actl!='\n')
 			buff[nb-1]=actl;
 		else
-			buuf[nb-1]='\0';
+			buff[nb-1]='\0';
 		free(chaine);
 		chaine=buff;
 	}while(actl!='\n');
 
+	printf("%s\n", chaine);
 	return chaine;
 }
 
@@ -121,17 +112,19 @@ uint32_t mfs_get_inode(uint32_t n_words, char** ret){
 	T_File curr ;
 	char* line=NULL;
 	uint32_t i_nb;
-	int i=0;
+	int i=0, k=1;
 	
 	mfs_const_fd(&curr, 0, READ);
-	
+
+	printf("Start file looking\n");	
+
 	for(i=0; i<n_words; i++){
 		while(k!=0){
-			free(line);
-			k = read(&curr, &i_nb, 4);
+			if(line != NULL)
+				free(line);
+			k = mfs_read(&curr, &i_nb, 4);
 			line = read_file_name(&curr);
 			if(strcmp(line, ret[i])==0){
-				
 				break;
 			}	
 
@@ -140,9 +133,9 @@ uint32_t mfs_get_inode(uint32_t n_words, char** ret){
 			}
 		}
 
-		mfs_const_fd(&curr, i_nb);
+		mfs_const_fd(&curr, i_nb, READ);
 	}
-
+	printf("End file looking\n");
 	return i_nb;
 }
 
@@ -152,197 +145,8 @@ void mfs_const_fd(T_File* file, uint32_t i_nb, uint32_t mod){
 	file->cursor_block= 0; //Place cursor
 	file->cursor_byte = 0;
 	file->mod = mod; // Set mod
+	mfs_reload(file, 0); //Reload block
 }
-
-/*
-uint32_t mfs_get_inode(uint32_t n_words, char** ret){
-//                      --- Partie 2: Recherche du fichier ---
-// n_words correspond a la Profondeur du fichier.
-    uint32_t line_inode, size_to_read, block_size, current_block,i=0,j=0;
-    char *next, *line=NULL, *new_line=NULL, c;
-    int found=0, k=0, m=0, l=0,size=0;
-    T_inode* inode_current;
-    inode_current = malloc(INODE_SIZE);
-    printf("yolo1\n");
-    inode_load(inode_current, ROOT_DIRECTORY_INODE);
-    block_size=G_super_block.b_size;
-    printf("%d, %d,\n",i,n_words);
-    for (i=0;i<n_words;i++)                     //Chemin
-    {
-        printf("yolo3\n");
-        next=ret[i];
-        printf("yolo %s\n",ret[i]);
-        current_block=inode_current->d_block[0];
-        size_to_read=inode_current->file_size;
-        printf("yolo5\n");
-        do                                      //Blocks
-        {
-            mfs_block_seek(current_block);
-            printf("yolo6\n");
-            do
-            {
-                disk_read(&line_inode,4);
-                block_size-=4;
-                size_to_read-=4;
-                disk_read(&c,1);
-                size=1;
-                printf("yolo%c\n",c);
-                while (c!='\n' && block_size!=0)
-                {
-                    new_line=(char*)malloc((size + 1)*sizeof(char));
-                    if(line==NULL)
-                    {
-                        new_line[0]=c;
-                        new_line[1]='\0';
-                    }
-                    else
-                    {
-                        strcpy(new_line, line);
-                        new_line[(size-1)]=c;
-                        new_line[size]='\0';
-                        free(line);
-                    }
-                    line=new_line;
-                    new_line=NULL;
-                    block_size--;
-                    size_to_read--;
-                    disk_read(&c,1);
-                }
-                if (strcmp(next,line)==0)
-                {
-                    found=1;
-                }
-                else
-                {
-                    found=0;
-                    free(line);
-                }
-            }while (!found && block_size!=0 && size_to_read!=0);//On récupère la ligne d'après si ce n'est pas la bonne
-            if (!found)
-            {                   //On change de block
-                if (j==14)
-                {
-                    disk_seek((inode_current->d_block[14])+4*k);
-                    disk_read(&current_block,4);
-                    disk_seek(current_block+4*l);
-                    disk_read(&current_block,4);
-                    disk_seek(current_block+4*m);
-                    disk_read(&current_block,4);
-                    m++;
-                    if (m==256)
-                    {
-                        l++;
-                        m=0;
-                    }
-                    if (l==256)
-                    {
-                        k++;
-                        l=0;
-                    }
-                    if (k==256)
-                    {
-                        j++;
-                        k=0;
-                    }
-                }
-                if (j==13)// les blocks doublements indirects
-                {
-                    disk_seek((inode_current->d_block[13])+4*k);
-                    disk_read(&current_block,4);
-                    disk_seek(current_block+4*l);
-                    disk_read(&current_block,4);
-                    l++;
-                    if (l==256)
-                    {
-                        k++;
-                        l=0;
-                    }
-                    if (k==256)
-                    {
-                        j++;
-                        k=0;
-                    }
-                }
-                if (j==12)// les blocks indirects
-                {
-                     disk_seek(inode_current->d_block[12]+4*k);
-                     disk_read(&current_block,4);
-                     if (k==256)
-                     {
-                         k=0;
-                         j++;
-                     }
-                }
-                if (j<12)
-                {
-                    j++;
-                    current_block=inode_current->d_block[j];
-                 }
-             }
-                block_size=G_super_block.b_size;
-        }while(!found && size_to_read!=0);
-
-	free(inode_current);
-	
-        if (found)
-        {
-            i++;
-            j=0;
-            return line_inode;
-        }
-        else
-        {
-            return ROOT_DIRECTORY_INODE; //fichier non trouvé
-        }
-    }//Bon techniquement là on doit avoir l'inode du fichier recherché.
-}*/
-/*                                 --- Partie 3: Construction du tableau de blocs ---
-
-    free (line);
-    file->inode_nb=line_inode;
-    file->inode=*inode_current;
-    file->cursor_byte=0;
-    file->cursor_block=0;
-    file->mod=mod;
-    int block_n=((inode_current->file_size)/G_super_block.b_size)+(1*inode_current->file_size % G_super_block.b_size!=0);
-    file->blocks=(uint32_t *)malloc(block_n*sizeof(uint32_t));
-    for (i=0;i<block_n;i++)
-    {
-        if (i<12)//direct
-        {
-            file->blocks[i]=inode_current->d_block[i];
-        }
-        else if (i<268)//indirect
-        {
-            j=i-12;
-            disk_seek(inode_current->d_block[12]+4*j);
-            disk_read(&(file->blocks[i]),4);
-        }
-        else if (i<65804)//indirect double
-        {
-            j=(i-268)%256;
-            k=((i-268)-k)/256;
-            disk_seek(inode_current->d_block[13]+4*k);
-            disk_read(&current_block,4);
-            disk_seek(current_block+4*j);
-            disk_read(&(file->blocks[i]),4);
-        }
-        else if (i<16843020)//indirect triple
-        {
-            j=(i-65804)%256;
-            l=(i-65804-j)/65536;
-            k=(i-65804-j-(l*65536))/256;
-            disk_seek(inode_current->d_block[14]+4*l);
-            disk_read(&current_block,4);
-            disk_seek(current_block+4*k);
-            disk_read(&current_block,4);
-            disk_seek(current_block+4*j);
-            disk_read(&(file->blocks[i]),4);
-        }
-    }
-    return 0;
-}*/
-
 int mfs_close(T_File* file){
 
 	file->mod = 0 ; //Can't read or write
@@ -367,6 +171,8 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 	
 	int temp=0;
 
+	printf("Helllo\n");
+
 	if(file->mod & READ == 0)
 		return -1;
 
@@ -381,11 +187,10 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 	if(f_buff==NULL)
 		return -1;
 
-	
 	disk_seek(G_super_block.b_size*file->blocks[file->cursor_block]+file->cursor_byte) ;
 	
 	if(byte > (G_super_block.b_size-file->cursor_byte)){
-		to_read=G_super_block.b_size-file->cursor_byte ;
+		to_read = G_super_block.b_size - file->cursor_byte ;
 		disk_read(f_buff, to_read);
 		nb_bitread=to_read;
 		file->cursor_block++;
@@ -576,10 +381,11 @@ int mfs_creat(const char* Path, char* name){
 	uint32_t i=0, j=0;
 	T_inode inode;
 	T_File dir;
+	char n='\n';
 	
 	mfs_open(Path, WRITE, &dir);
 
-	printf("Creat :dir: %d, %d", dir.inode_nb, dir.inode.file_size);
+	printf("Creat :dir: i_nb : %d size : %d \n", dir.inode_nb, dir.inode.file_size);
 
 	mfs_file_seek(&dir, dir.inode.file_size);
 
@@ -594,7 +400,7 @@ int mfs_creat(const char* Path, char* name){
 	seek_to_Ibitmap();	
 	i = first_free_bitmap();
 
-	printf("Creat %d\n", i);
+	printf("Creat :inode free: %d \n", i);
 
 	change_inode_status(i);
 		
@@ -603,7 +409,9 @@ int mfs_creat(const char* Path, char* name){
 	mfs_write(&dir, &i, sizeof(uint32_t));
 	
 	j = strlen(name);
+
 	mfs_write(&dir, name, j);
+	mfs_write(&dir, &n, 1);
 
 	mfs_close(&dir);
 
@@ -651,14 +459,14 @@ void mfs_cat(const char* path,T_File * file){
     char cat_buff;
     int lu;
     
-    if(file->inode.file_mod & 0b10000000 == 0)
+    if(file->inode.file_mode & 0b10000000 == 0)
     {
-        mfs_open(path,READ,file);
+        mfs_open(path, READ, file);
         do
         {
-            lu=mfs_read(file,cat_buff,1);
+            lu=mfs_read(file, &cat_buff, 1);
             if(lu!=0)
-                printf("%c",&buff);
+                printf("%c",cat_buff);
         }while(lu!=0);
         
         mfs_close(file);
@@ -672,41 +480,46 @@ void mfs_cat(const char* path,T_File * file){
 }
 
 
-void mfs_ls(const char* path,T_File * file){
+void mfs_ls(const char* path){
     
     char ls_buff;
     int lu,i;
+    T_File file;
     
-    
-     if(file->inode.file_mod & 0b10000000 == 0)
+    mfs_open(path, READ, &file);
+   
+	printf("Contenu de %s\n", path);
+ 
+     if(file.inode.file_mode & 0b10000000 != 0)
     {
         printf("Ce n'est pas un répertoire\n");
     }
     
     else
     {
-        mfs_open(path,READ,file);
         do
         {
             do
-            {
-                for(i=0;i<4;i++)
-                lu=mfs_read(file,ls_buff,1);
-                
-                lu=mfs_read(file,ls_buff,1);
-                    printf("%c",&buff);
+            { 
+		
+                for(i=0;i<4;i++){
+                	lu=mfs_read(&file, &ls_buff,1);
+  		}
+
+                lu=mfs_read(&file, &ls_buff, 1);
+
             }while(ls_buff!='\n');
         }while(lu!=0);
             
-        mfs_close(file);
+        mfs_close(&file);
     }
 }
 
 void mfs_assert(const char* path,char* buff,T_File * file){
     
-    mfs_file_seek(file,file.inode.file_size);
+    mfs_file_seek(file, file->inode.file_size);
     
-    mfs_write(file,buff,strlen(buff));
+    mfs_write(file, buff, strlen(buff));
     
 }
 

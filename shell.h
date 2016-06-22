@@ -1,15 +1,12 @@
 #ifndef SHELL_H
 #define SHELL_H
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "fs.h"
 //MACROS SHELL
 
 #define COMMAND_EXIT "exit"
 #define COMMAND_CAT "cat"
 #define COMMAND_LS "ls"
-
+#define COMMAND_ASSERT "append"
 
 //Prototypes//
 

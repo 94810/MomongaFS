@@ -16,7 +16,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     }
 
     mfs_const_fd(file, file->inode_nb, mod);
-
+    
     printf("File open\n");
 }
     //                          --- Part 1: Découpage du chemin ---
@@ -88,7 +88,7 @@ char ** mfs_path_process(const char* path, int* path_size){
 char* read_file_name(T_File* file){
 	char *chaine=NULL, *buff=NULL;
 	char actl=0, nb=0, i=0;
-	printf("Looking for name\n");
+	printf("SEARCH File Name : ");
 	do{
 		mfs_read(file, &actl, 1);
 		nb++;
@@ -111,19 +111,20 @@ char* read_file_name(T_File* file){
 uint32_t mfs_get_inode(uint32_t n_words, char** ret){
 	T_File curr ;
 	char* line=NULL;
-	uint32_t i_nb;
+	uint32_t i_nb=0;
 	int i=0, k=1;
 	
 	mfs_const_fd(&curr, 0, READ);
 
-	printf("Start file looking\n");	
+	printf("SEARCH n_words: %d \n", n_words);
 
 	for(i=0; i<n_words; i++){
 		while(k!=0){
 			if(line != NULL)
 				free(line);
-			k = mfs_read(&curr, &i_nb, 4);
-			line = read_file_name(&curr);
+			k = mfs_read(&curr, &i_nb, sizeof(uint32_t)) ;
+			printf("INODE SEACH :: %d\n") ;
+			line = read_file_name(&curr) ;
 			if(strcmp(line, ret[i])==0){
 				break;
 			}	
@@ -171,17 +172,15 @@ int mfs_read(T_File* file , void* buff, uint32_t byte){
 	
 	int temp=0;
 
-	printf("Helllo\n");
-
 	if(file->mod & READ == 0)
 		return -1;
 
 	if(file->cursor_block*G_super_block.b_size + file->cursor_byte + byte > file->inode.file_size){
-		temp =  file->inode.file_size - file->cursor_block*G_super_block.b_size + file->cursor_byte ; 
-		if(temp<0)
-			byte = 0;
-		else
-			byte = temp;
+		if(file->inode.file_size < file->cursor_block*G_super_block.b_size + file->cursor_byte){
+			printf("EOF\n");
+			return 0;
+		}else
+			byte = file->inode.file_size - file->cursor_block*G_super_block.b_size + file->cursor_byte;
 		
 	}
 	if(f_buff==NULL)
@@ -248,7 +247,6 @@ int mfs_write(T_File* file, void* buff, uint32_t byte){
 	//If we need more space give it
 	if(init_block_size<final_block_size){
 		mfs_alloc_block(file, final_block_size-init_block_size);
-		printf("coucou\n");	
 	}
 	
 	//On écrit 
@@ -482,8 +480,10 @@ void mfs_cat(const char* path,T_File * file){
 
 void mfs_ls(const char* path){
     
-    char ls_buff;
-    int lu,i;
+    char ls_buff='\0';
+    int lu,i, trig=1;
+	uint32_t kek;
+    
     T_File file;
     
     mfs_open(path, READ, &file);
@@ -499,20 +499,21 @@ void mfs_ls(const char* path){
     {
         do
         {
-            do
-            { 
-		
-                for(i=0;i<4;i++){
-                	lu=mfs_read(&file, &ls_buff,1);
-  		}
+       	    lu=mfs_read(&file, &kek,4);
+	    while(ls_buff!='\n'){
+			lu=mfs_read(&file, &ls_buff, 1);
+			printf("%c", ls_buff);
+			if(lu==0)
+				break;
+            }
+	    if(lu!=0)
+	          ls_buff='\0';
 
-                lu=mfs_read(&file, &ls_buff, 1);
-
-            }while(ls_buff!='\n');
         }while(lu!=0);
-            
         mfs_close(&file);
     }
+
+	printf("FIN DE CONTENU\n");
 }
 
 void mfs_assert(const char* path,char* buff,T_File * file){

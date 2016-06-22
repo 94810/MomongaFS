@@ -1,72 +1,114 @@
 #include "fs.h"
 
 int mfs_open(const char* path, uint8_t mod, T_File * file){
-
+    uint32_t  path_size, i_n_lel;
+    char ** processed_path;
+    T_inode* i_lel;
+    processed_path=mfs_path_process(path, &path_size);
+    if (processed_path[0][0]!='/')
+    {
+        i_n_lel=mfs_get_inode(path_size,processed_path);
+    }
+    else 
+    {
+        i_n_lel=ROOT_DIRECTORY_INODE;
+    }
+        inode_load(i_lel,i_n_lel);
+}
     //                          --- Part 1: Découpage du chemin ---
+char ** mfs_path_process(const char* path, int* path_size){
+    printf("Start_mfs_open()\n");
     uint32_t  n_words=0, i, j, size=0;
     char c, ** ret=NULL, ** new_ret=NULL, *word=NULL, *new_word=NULL;
-    do{
-         c=path[i];
-         while (c!='\n' && c!='\0'&& c!='/')
-         {
-             size++;
-             new_word=(char*)malloc((size + 1)*sizeof(char));
-             if(word==NULL)
-             {
-                 new_word[0]=c;
-                 new_word[size]='\0';
-             }
-             else
-             {
-                 strcpy(new_word, word);
-                 new_word[(size-1)]=c;
-                 new_word[size]='\0';
-                 free(word);
-             }
-             word=new_word;
-             new_word=NULL;
-             i++;
+    if (path[0]!='/'){
+       // printf("lel\n");
+        do{
              c=path[i];
-         }
-         size=0;
-         n_words++;
-         new_ret=(char**)malloc(n_words*sizeof(char*));
-         if (ret==NULL)
-         {
-             new_ret[0]=word;
-             word=NULL;
-         }
-         else
-         {
-             for(j=0;j<(n_words-1);j++)
-             {
-                 new_ret[j]=ret[j];
+            while (c!='\n' && c!='\0'&& c!='/')
+            {
+                 size++;
+                new_word=(char*)malloc((size + 1)*sizeof(char));
+                if(word==NULL)
+                {
+                     new_word[0]=c;
+                    new_word[size]='\0';
+                }
+                else
+                {
+                     strcpy(new_word, word);
+                    new_word[(size-1)]=c;
+                    new_word[size]='\0';
+                    free(word);
+                }
+                word=new_word;
+                new_word=NULL;
+                i++;
+                c=path[i];
              }
-             new_ret[(n_words-1)]=word;
-             free(ret);
-         }
-         ret=new_ret;
-         new_ret=NULL;
-         i++;
-    }while(c!='\0' && c!='\n');
+            size=0;
+            n_words++;
+            new_ret=(char**)malloc(n_words*sizeof(char*));
+            if (ret==NULL)
+            {
+                 new_ret[0]=word;
+                word=NULL;
+            }
+            else
+            {
+                 for(j=0;j<(n_words-1);j++)
+                {
+                     new_ret[j]=ret[j];
+                }  
+                new_ret[(n_words-1)]=word;
+                free(ret);
+            }
+            ret=new_ret;
+            new_ret=NULL;
+            i++;
+        }while(c!='\0' && c!='\n');
+    }
+    else
+    {
+        //printf("lal1\n");
+        word=(char*)malloc(2*sizeof(char));
+       // printf("lal2\n");
+        word[0]='/';
+       // printf("lal3\n");
+        word[1]='\0';
+       // printf("lal4\n");
+        ret=(char**)malloc(sizeof(char*));
+       // printf("lal5\n");
+        ret[0]=word;
+        n_words=1;
+       // printf("lal6\n");
+    }
+    printf("mfs_open() part 1 done\n");
+    *path_size=n_words;
+    return ret;
+}
+uint32_t mfs_get_inode(uint32_t n_words, char** ret){
 //                      --- Partie 2: Recherche du fichier ---
 // n_words correspond a la Profondeur du fichier.
-    uint32_t line_inode, size_to_read, block_size, current_block;
-    char * next, *line=NULL, *new_line=NULL;
-    int found=0, k=0, m=0, l=0;
+uint32_t line_inode, size_to_read, block_size, current_block,i=0,j=0;
+    char * next, *line=NULL, *new_line=NULL, c;
+    int found=0, k=0, m=0, l=0,size=0;
     T_inode* inode_current;
-    i=0;
-    j=0;
+    printf("yolo1\n");
     inode_load(inode_current, ROOT_DIRECTORY_INODE);
     block_size=G_super_block.b_size;
+    printf("%d, %d,\n",i,n_words);
     for (i=0;i<n_words;i++)                     //Chemin
     {
+        printf("yolo3\n");
         next=ret[i];
+        printf("yolo %s\n",ret[i]);
         current_block=inode_current->d_block[0];
         size_to_read=inode_current->file_size;
+        printf("yolo5\n");
         do                                      //Blocks
         {
             mfs_block_seek(current_block);
+            printf("yolo6\n");
             do
             {
                 disk_read(&line_inode,4);
@@ -74,6 +116,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
                 size_to_read-=4;
                 disk_read(&c,1);
                 size=1;
+                printf("yolo%c\n",c);
                 while (c!='\n' && block_size!=0)
                 {
                     new_line=(char*)malloc((size + 1)*sizeof(char));
@@ -170,17 +213,17 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
         }while(!found && size_to_read!=0);
         if (found)
         {
-            inode_load(inode_current, line_inode);
             i++;
             j=0;
+            return line_inode;
         }
         else
         {
-            return -1; //fichier non trouvé
+            return ROOT_DIRECTORY_INODE; //fichier non trouvé
         }
     }//Bon techniquement là on doit avoir l'inode du fichier recherché.
-
-//                                  --- Partie 3: Construction du tableau de blocs ---
+}
+/*                                 --- Partie 3: Construction du tableau de blocs ---
 
     free (line);
     file->inode_nb=line_inode;
@@ -225,7 +268,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
         }
     }
     return 0;
-}
+}*/
 
 int mfs_close(T_File* file){
 

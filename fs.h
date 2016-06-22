@@ -19,6 +19,8 @@ typedef struct FD{
 } T_File;
 
 int mfs_open(const char* Path, uint8_t mod, T_File* file) ; // 0 open sucess -1 fail
+char** mfs_path_process(const char* Path, int* path_size) ; // cuts the path
+uint32_t mfs_get_inode(uint32_t path_size, char** path);
 int mfs_block_seek(uint32_t block) ; //Goes to block number "block" 
 void mfs_file_seek(T_File* file, unsigned int byte) ; //move cursor to byte number "byte" in file
 int mfs_creat(const char* Path) ;

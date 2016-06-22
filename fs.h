@@ -23,7 +23,7 @@ char** mfs_path_process(const char* Path, int* path_size) ; // cuts the path
 uint32_t mfs_get_inode(uint32_t path_size, char** path);
 int mfs_block_seek(uint32_t block) ; //Goes to block number "block" 
 void mfs_file_seek(T_File* file, unsigned int byte) ; //move cursor to byte number "byte" in file
-int mfs_creat(const char* Path) ;
+int mfs_creat(const char* Path, char* name) ;
 int mfs_close(T_File* file) ; // Write T_File.inode on disk and change mod to 0
 int mfs_read(T_File* file , void* buff, uint32_t byte) ;
 int mfs_write(T_File* file, void* buff, uint32_t byte) ;

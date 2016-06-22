@@ -1,19 +1,22 @@
 #include "fs.h"
 
 int mfs_open(const char* path, uint8_t mod, T_File * file){
-    uint32_t  path_size, i_n_lel;
+    uint32_t  path_size;
     char ** processed_path;
-    T_inode* i_lel;
+
     processed_path=mfs_path_process(path, &path_size);
+
     if (processed_path[0][0]!='/')
     {
-        i_n_lel=mfs_get_inode(path_size,processed_path);
+        file->inode_nb=mfs_get_inode(path_size,processed_path);
     }
     else 
     {
-        i_n_lel=ROOT_DIRECTORY_INODE;
+        file->inode_nb=ROOT_DIRECTORY_INODE;
     }
-        inode_load(i_lel,i_n_lel);
+        inode_load(&(file->inode),file->inode_nb);
+	file->mod=mod;
+	mfs_reload(file, 0);
 }
     //                          --- Part 1: Découpage du chemin ---
 char ** mfs_path_process(const char* path, int* path_size){
@@ -492,11 +495,18 @@ void mfs_reload (T_File* file, uint32_t block){
 	
 }
 
-int mfs_creat(const char* Path){
+int mfs_creat(const char* Path, char* name){
 
-	int i=0;
+	uint32_t i=0, j=0;
 	T_inode inode;
+	T_File dir;
 	
+	mfs_open(Path, WRITE, &dir);
+
+	printf("Creat :dir: %d, %d", dir.inode_nb, dir.inode.file_size);
+
+	mfs_file_seek(&dir, dir.inode.file_size);
+
 	inode.file_size=0;
 	inode.file_mode=0b00000000;
 	
@@ -513,5 +523,12 @@ int mfs_creat(const char* Path){
 		
 	inode_write(&inode, i);
 
-	return i;
+	mfs_write(&dir, &i, sizeof(uint32_t));
+	
+	j = strlen(name);
+	mfs_write(&dir, name, j);
+
+	mfs_close(&dir);
+
+	return j;
 }

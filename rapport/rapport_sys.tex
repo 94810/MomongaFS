@@ -13,7 +13,7 @@
         ISTY-IATIC-3
         \vskip 3pt
         \large Projet-Système - Dossier Momonga FS
-    \author{Mathieu BRETTE-Pablo BOURDELAS-Sébatien POIROT-Guillaume RYCKAERT}
+    \author{Mathieu BRETTE \and Pablo BOURDELAS \and Sébatien POIROT\and Guillaume RYCKAERT}
     \end{minipage}
  }
  \maketitle
@@ -34,6 +34,26 @@ Le disque est composé des différentes structures suivantes:
 \item La Block Bitmap
 \item Les Data
 \end{itemize}
+
+\subsection*{Le SuperBlock}
+Le SuperBlock contient les informations essentielles du disque,\\comme par exemple: 
+\begin{itemize}
+\item Le nombre total d'inodes sur le disque
+\item Le nombre total de blocks de données sur le disque
+\item Le nombre de blocks libres
+\item Le nombre d'inodes libres
+\item La taille des blocks (en bytes)
+\item Ainsi que le numéro du premier block de données
+\end{itemize}
+Le superblock est chargé en même temps que le disque, dans le cas de la création d'un disque, il est automatiquement crée. Nous acons choisi de déclarer le SuperBlock en global, car il est utilisé dans de nombreuses fonction du SGF.
+\subsection*{Les inodes}
+Chaque inode représente un fichier/dossier sur le disque. L'inode fournit les informations suivantes:
+\begin{itemize}
+    \item la taille des données du fichier\\ Dans le cas d'un dossier, cette valeur correspond a la taille utilisée pour stocker les numéros d'inodes de son contenu, ainsi que leur nom.
+    \item une valeur représentant les droits d'acces, ainsi que la nature(fichier\\dossier)
+    \item un tableau de 15 numéros de blocks, les 12 premiers représentent les blocks contenant les données du dossier/fichier\\ Le 13ème est le numéro de block indirect: ce block contient des numéros de blocks appartenant au fichier.\\De même pour le 14ème block qui est double indirect, et pour le 15ème, qui est triple indirect.
+\end{itemize}
+
 
 \newpage 
 

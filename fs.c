@@ -6,7 +6,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     
     processed_path=mfs_path_process(path, &path_size);
     printf("OPEN : parsed path\n");
-    printf("OPEN : String :%s", processed_path[0]);
+    printf("OPEN : String :%s, %s, %s", processed_path[0], processed_path[1], processed_path[2]);
 
     if (processed_path[0][0]!='/')
     {
@@ -23,13 +23,15 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
 	printf("OPEN inode_nb: %d\n", file->inode_nb);
 }
     //                          --- Part 1: Découpage du chemin ---
+
 char ** mfs_path_process(const char* path, int* path_size){
     printf("Start_mfs_open()\n");
-    uint32_t  n_words=0, i=0, j, size=0;
+    uint32_t  n_words=0, i=0, j=0, size=0;
     char c, ** ret=NULL, ** new_ret=NULL, *word=NULL, *new_word=NULL;
-    if (path[0]!='/'){
+    if (!(path[0]=='/' && path[1]=='\0')){
+       // printf("lel\n");
         do{
-            c=path[i];
+             c=path[i];
             while (c!='\n' && c!='\0'&& c!='/')
             {
                  size++;
@@ -75,18 +77,23 @@ char ** mfs_path_process(const char* path, int* path_size){
     }
     else
     {
+        //printf("lal1\n");
         word=(char*)malloc(2*sizeof(char));
+       // printf("lal2\n");
         word[0]='/';
+       // printf("lal3\n");
         word[1]='\0';
+       // printf("lal4\n");
         ret=(char**)malloc(sizeof(char*));
+       // printf("lal5\n");
         ret[0]=word;
         n_words=1;
+       // printf("lal6\n");
     }
     printf("mfs_open() part 1 done\n");
     *path_size=n_words;
     return ret;
 }
-
 
 char* read_file_name(T_File* file){
 	char *chaine=NULL, *buff=NULL;
@@ -375,6 +382,49 @@ void mfs_reload (T_File* file, uint32_t block){
 		}
 	}
 	
+}
+
+int mfs_mkdir(const char* Path, char* name){
+	
+	uint32_t i=0, j=0;
+	T_inode inode;
+	T_File dir;
+	char n='\n';
+	
+	mfs_open(Path, WRITE, &dir);
+
+	printf("Creat :dir: i_nb : %d size : %d \n", dir.inode_nb, dir.inode.file_size);
+
+	mfs_file_seek(&dir, dir.inode.file_size);
+
+	inode.file_size=0;
+	inode.file_mode=0b10000000;
+	inode.link_count=1;
+	
+	for(i=0; i<=15; i++){
+		inode.d_block[i]=0;
+	}
+
+	seek_to_Ibitmap();	
+	i = first_free_bitmap();
+
+	printf("Creat :inode free: %d \n", i);
+
+	change_inode_status(i);
+		
+	inode_write(&inode, i);
+
+	mfs_write(&dir, &i, sizeof(uint32_t));
+	
+	j = strlen(name);
+
+	mfs_write(&dir, name, j);
+	mfs_write(&dir, &n, 1);
+
+	mfs_close(&dir);
+
+	return j;
+
 }
 
 int mfs_creat(const char* Path, char* name){

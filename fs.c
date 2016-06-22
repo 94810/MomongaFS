@@ -648,3 +648,11 @@ void mfs_ls(const char* path,T_File * file){
     }
 }
 
+int mfs_assert(const char* path,char* buff,T_File * file){
+    
+    mfs_file_seek(file,file.inode.file_size);
+    
+    mfs_write(file,buff,strlen(buff));
+    
+}
+

@@ -25,7 +25,7 @@ int mfs_open(const char* path, uint8_t mod, T_File * file){
     //                          --- Part 1: Découpage du chemin ---
 char ** mfs_path_process(const char* path, int* path_size){
     printf("Start_mfs_open()\n");
-    uint32_t  n_words=0, i, j, size=0;
+    uint32_t  n_words=0, i=0, j, size=0;
     char c, ** ret=NULL, ** new_ret=NULL, *word=NULL, *new_word=NULL;
     if (path[0]!='/'){
        // printf("lel\n");

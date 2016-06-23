@@ -34,7 +34,6 @@ char** user_input (int* p_size){
             i++;
             c=command[i];
         }
-       // printf("get_word %s \n",word);
         size=0;
         n_words++;
         new_ret=(char**)malloc(n_words*sizeof(char*));
@@ -48,13 +47,16 @@ char** user_input (int* p_size){
             for(j=0;j<(n_words-1);j++)
             {
                 new_ret[j]=ret[j];
+	//	printf("user_input: %s\n", new_ret[j]);
             }
             new_ret[(n_words-1)]=word;
+	//	printf("user_input: %s\n", new_ret[n_words-1]);
             free(ret);
         }
         ret=new_ret;
         new_ret=NULL;
         i++;
+	word=NULL;
     }while(c!='\0' && c!='\n');
     *p_size=n_words;
     return ret;
@@ -87,7 +89,11 @@ int main (void){
             free(user_command);
         }
         user_command=user_input(&command_length);
-        
+	/*for (i=0;i<command_length;i++)
+            {
+                printf("%s ",user_command[i]);
+            }
+		printf("\n");*/
 	if (strcmp(COMMAND_LS,user_command[0])==0)
         {
             if (command_length>1)
@@ -100,14 +106,14 @@ int main (void){
         {
             if (command_length>1)
             {
-                mfs_cat(user_command[1], &file);
+                mfs_cat(user_command[1]);
             }
         }
         else if (strcmp(COMMAND_ASSERT,user_command[0])==0)
         {
             if (command_length>2)
             {
-                mfs_assert(user_command[1],user_command[2], &file);
+                mfs_assert(user_command[1],user_command[2]);
             }
         }
 

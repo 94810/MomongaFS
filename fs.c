@@ -73,6 +73,7 @@ char ** mfs_path_process(const char* path, int* path_size){
             ret=new_ret;
             new_ret=NULL;
             i++;
+            word=NULL;
         }while(c!='\0' && c!='\n');
     }
     else
@@ -133,7 +134,7 @@ uint32_t mfs_get_inode(uint32_t n_words, char** ret){
 			if(line != NULL)
 				free(line);
 			k = mfs_read(&curr, &i_nb, sizeof(uint32_t)) ;
-			printf("INODE SEACH :: %d\n") ;
+			printf("INODE SEACH :: %u\n", i_nb) ;
 			line = read_file_name(&curr) ;
 			if(strcmp(line, ret[i])==0){
 				break;
@@ -505,25 +506,25 @@ void mfs_init(){
     }  
 }
 
-void mfs_cat(const char* path,T_File * file){
+void mfs_cat(const char* path){
     
     char cat_buff;
     int lu;
-    
-    if(file->inode.file_mode & 0b10000000 == 0)
+	
+    T_File file;
+
+    if(1)
     {
-        mfs_open(path, READ, file);
+        mfs_open(path, READ, &file);
         do
         {
-            lu=mfs_read(file, &cat_buff, 1);
+            lu=mfs_read(&file, &cat_buff, 1);
             if(lu!=0)
                 printf("%c",cat_buff);
         }while(lu!=0);
         
-        mfs_close(file);
-    }
-    
-   else
+        mfs_close(&file);
+    }else
    {    
        printf("Ce n'est pas un fichier !\n"); 
    }
@@ -535,7 +536,7 @@ void mfs_ls(const char* path){
     
     char ls_buff='\0';
     int lu,i, trig=1;
-	uint32_t kek;
+    uint32_t kek;
     
     T_File file;
     
@@ -563,17 +564,20 @@ void mfs_ls(const char* path){
 	          ls_buff='\0';
 
         }while(lu!=0);
-        mfs_close(&file);
     }
+	mfs_close(&file);
 
 	printf("FIN DE CONTENU\n");
 }
 
-void mfs_assert(const char* path,char* buff,T_File * file){
+void mfs_assert(const char* path,char* buff){
+    T_File file;    
     
-    mfs_file_seek(file, file->inode.file_size);
-    
-    mfs_write(file, buff, strlen(buff));
+    mfs_open(path, WRITE, &file);
+    mfs_file_seek(&file, file.inode.file_size);
+    printf("WRITE");
+    mfs_write(&file, buff, strlen(buff));
+    mfs_close(&file);
     
 }
 

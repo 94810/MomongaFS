@@ -68,13 +68,15 @@ Il ya deux bitmaps dans le disque, une pour marquer les blocks utilisés, l'autr
 Les données sont stockeés par blocks de taille fixe, définie a la création du disque virtuel. En écriture, le système remplit toujours les premiers blocs libres.
 
 \section*{Fonctions implémentées}
-Le shell de notre système ne comprend que 3 fonctions: cat,ls, et assert.
+Le shell de notre système ne comprend que 4 fonctions: cat,ls, et assert, ainsi que mkdir.
 \subsection*{cat}
 Cette fonction cherche tout simplement l'inode correspondant au chemin passé en paramètre, vérifie qu'il correspond bien a un fichier, puis affiche son contenu jusqu'a ce qu'il aie lu toute la taille du fichier.
 \subsection*{ls}
 ls charge l'inode corresondant, vérifie que c'est un dossier, puis lit les blocks correspondants afin d'afficher le contenu de ce dernier.
 \subsection*{assert}
 assert prend pour arguments un chemin, ainsi qu'une chaîne de caractères, le programme ajoute ensuite la chaine de caractères a la fin du fichier.
+\subsection*{mkdir}
+Cette fonction permet de créer un nouveau dossier a l'endroit donné.
 
 \section*{Répartiton du travail}
 La répartition du travail a été la suivante:Pablo a travaillé sur les structures de disque, de superblock et d'inode,ainsi que sur les primitves système, Guillaume a travaillé le shell ainsi que les primitves système, et Mathieu et Sébastien ont travaillé sur les primitves système.
@@ -82,7 +84,7 @@ La répartition du travail a été la suivante:Pablo a travaillé sur les struct
 \section*{Difficultés Rencontrées}
 La structure choisie nous semblait complète et plus fidèle a un modèle réel, cependant nous avons sous-estimé le temps requis pour implémenter celle-ci.
 \section*{Conclusion}
-Ce projet nous a permis d'apprécier toute la complexité d'un système de fichiers, ainsi que de son implémentation.
+Ce projet nous a permis d'apprécier toute la complexité d'un système de fichiers, ainsi que de son implémentation. Pour aller plus loin, nous pourrions developper rm, ainsi que touch, ou encore cp et mv.
 
 
 \end{document}
